@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment Dashboard</title>
+    <style>
+        /* --- Colors & Variables --- */
+        :root {
+            --color-primary: #347eff; /* Bright Blue */
+            --color-primary-dark: #005bb5;
+            --color-sidebar-bg: #1e293b; /* Dark Slate Blue */
+            --color-sidebar-text: #e2e8f0;
+            --color-background: #f1f5f9; /* Very light gray/blue for main canvas */
+            --color-surface: #ffffff;
+            --color-text-primary: #1e293b;
+            --color-text-secondary: #64748b;
+            --color-border: #e2e8f0;
+            --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --radius-default: 8px;
+        }
+
+        /* --- Base & Typography --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            background: var(--color-background);
+            color: var(--color-text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* --- Main Layout Grid (Dashboard Structure) --- */
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 240px 1fr; /* Fixed Sidebar + Main Content */
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar (Navigation) --- */
+        .sidebar {
+            background: var(--color-sidebar-bg);
+            color: var(--color-sidebar-text);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            border-right: 1px solid #334155;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--color-surface);
+            margin-bottom: 24px;
+        }
+
+        .nav-link {
+            color: var(--color-sidebar-text);
+            text-decoration: none;
+            font-size: 15px;
+            padding: 10px 12px;
+            border-radius: var(--radius-default);
+            transition: background 0.2s, color 0.2s;
+            display: block;
+        }
+
+        .nav-link:hover {
+            background: #334155;
+            color: var(--color-surface);
+        }
+
+        .nav-link.active {
+            background: var(--color-primary);
+            color: white;
+            font-weight: 600;
+        }
+
+        /* --- Main Content Area --- */
+        .main-panel {
+            padding: 32px 48px;
+        }
+
+        /* --- Header / Context Bar --- */
+        .header-bar {
+            margin-bottom: 40px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .report-title {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 4px;
+        }
+
+        .report-subtitle {
+            font-size: 16px;
+            color: var(--color-text-secondary);
+        }
+
+        /* --- Key Performance Indicators (KPIs) Grid --- */
+        .kpi-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .kpi-card {
+            background: var(--color-surface);
+            padding: 24px;
+            border-radius: var(--radius-default);
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--color-border);
+        }
+
+        .kpi-label {
+            font-size: 14px;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .kpi-value {
+            font-size: 32px; /* Large, bold value */
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        /* --- Main Report Panel --- */
+        .report-panel {
+            background: var(--color-surface);
+            border-radius: var(--radius-default);
+            box-shadow: var(--shadow-card);
+            padding: 32px;
+            border: 1px solid var(--color-border);
+            min-height: 400px; /* Gives the panel some height */
+        }
+
+        .section-header {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--color-text-primary);
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .report-content {
+            font-size: 16px;
+            line-height: 1.7;
+            color: var(--color-text-secondary);
+            white-space: pre-wrap;
+            max-height: 450px;
+            overflow-y: auto;
+        }
+
+        /* Scrollbar styles remain the same for now */
+        .report-content::-webkit-scrollbar { width: 8px; }
+        .report-content::-webkit-scrollbar-track { background: #f1f1f1; }
+        .report-content::-webkit-scrollbar-thumb { background: #c0c0c0; border-radius: 4px; }
+
+
+        /* --- Action Bar & Buttons --- */
+        .action-bar {
+            display: flex;
+            gap: 16px;
+            justify-content: flex-end;
+            padding-top: 32px;
+        }
+
+        .button {
+            padding: 10px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: var(--radius-default);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .button-primary {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .button-primary:hover {
+            background: var(--color-primary-dark);
+            box-shadow: 0 4px 8px rgba(52, 126, 255, 0.4);
+        }
+
+        .button-secondary {
+            background: var(--color-surface);
+            color: var(--color-text-primary);
+            border: 1px solid var(--color-border);
+        }
+
+        .button-secondary:hover {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+        }
+        
+        /* --- Loading/Error States --- */
+        .state-container {
+            grid-column: 2; /* Ensure it appears in the main panel area */
+            text-align: center;
+            padding: 80px 24px;
+        }
+
+        .loading-spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid #e0e0e0;
+            border-top-color: var(--color-primary);
+            border-radius: 50%;
+            animation: rotate 0.8s linear infinite;
+            margin: 0 auto 24px;
+        }
+
+        @keyframes rotate {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-title { color: #dc2626; }
+        .error-icon { font-size: 56px; }
+
+
+        /* --- Responsiveness (Mobile) --- */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 1fr; /* Stack sidebar and main content */
+            }
+
+            .sidebar {
+                padding: 16px 24px;
+                flex-direction: row; /* Horizontal nav for mobile */
+                gap: 8px;
+                border-right: none;
+                border-bottom: 1px solid #334155;
+                overflow-x: auto;
+            }
+            
+            .logo {
+                display: none; /* Hide logo on small screens to save space */
+            }
+
+            .nav-link {
+                padding: 8px 12px;
+                flex-shrink: 0;
+            }
+            
+            .main-panel {
+                padding: 24px;
+            }
+            
+            .kpi-section {
+                gap: 16px;
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* Allow smaller cards */
+            }
+
+            .action-bar {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .button {
+                width: 100%;
+                text-align: center;
+            }
+        }
+        
+        /* --- Print Styles --- */
+        @media print {
+            .sidebar, .action-bar {
+                display: none;
+            }
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+            .main-panel {
+                padding: 0;
+            }
+            .kpi-card, .report-panel {
+                box-shadow: none;
+                border: 1px solid #ccc;
+                margin-bottom: 20px;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <div class="logo">Knowledge Coach</div>
+            <a href="/" class="nav-link">Home</a>
+            <a href="/dashboard" class="nav-link active">Assessments</a>
+            <a href="/chat" class="nav-link">New Session</a>
+        </div>
+
+        <div class="main-panel">
+            <div class="state-container" id="loadingState">
+                <div class="loading-spinner"></div>
+                <p style="color: var(--color-text-secondary);">Loading report data...</p>
+            </div>
+
+            <div class="state-container" id="errorState" style="display:none;">
+                <div class="error-icon">⚠️</div>
+                <h2 class="error-title">Unable to load report</h2>
+                <p class="report-subtitle" id="errorMessage"></p>
+                <button class="button button-primary" onclick="location.reload()">Retry</button>
+            </div>
+
+            <div class="main-content" id="mainContent" style="display:none;">
+                <div class="header-bar">
+                    <h1 class="report-title">Assessment Dashboard</h1>
+                    <p class="report-subtitle">Detailed evaluation and key metrics for the current session.</p>
+                </div>
+
+                <div class="kpi-section">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Subject</div>
+                        <div class="kpi-value" id="topicValue" style="color: var(--color-text-primary); font-size: 24px;">—</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Grade Level</div>
+                        <div class="kpi-value" id="gradeValue" style="color: #10b981;">—</div> </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Conversation Length</div>
+                        <div class="kpi-value" id="messagesValue">0</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Assessment Date</div>
+                        <div class="kpi-value" id="dateValue" style="color: var(--color-text-secondary); font-size: 24px;">—</div>
+                    </div>
+                </div>
+
+                <div class="report-panel">
+                    <h2 class="section-header">Detailed Evaluation Summary</h2>
+                    <div class="report-content" id="reportText">
+                        Loading assessment...
+                    </div>
+                </div>
+
+                <div class="action-bar">
+                    <button class="button button-secondary" onclick="downloadReport()">Download Report (TXT)</button>
+                    <button class="button button-secondary" onclick="window.print()">Print/Export PDF</button>
+                    <a href="/" class="button button-primary">Return to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session_id');
+
+        const loadingState = document.getElementById('loadingState');
+        const errorState = document.getElementById('errorState');
+        const mainContent = document.getElementById('mainContent');
+
+        function showError(message) {
+            loadingState.style.display = 'none';
+            mainContent.style.display = 'none';
+            errorState.style.display = 'block';
+            document.getElementById('errorMessage').textContent = message;
+        }
+
+        function showContent() {
+            loadingState.style.display = 'none';
+            errorState.style.display = 'none';
+            mainContent.style.display = 'block';
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric' 
+            });
+        }
+
+        function downloadReport() {
+            const reportText = document.getElementById('reportText').textContent;
+            const topic = document.getElementById('topicValue').textContent;
+            const blob = new Blob([reportText], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `assessment-${topic.replace(/\s+/g, '-').toLowerCase()}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        async function loadReport() {
+            if (!sessionId) {
+                showError('No session ID provided. Please access this page from a completed assessment.');
+                return;
+            }
+
+            // --- Mock Data for Visual Demo ---
+            const data = {
+                topic: 'World War II Causes',
+                grade: '10th Grade',
+                conversation_length: 38,
+                generated_at: new Date().toISOString(),
+                assessment_text: "The candidate demonstrated a comprehensive understanding of the major political and economic factors leading up to World War II. Strengths include articulating the failure of the Treaty of Versailles and the impact of the Great Depression. The primary area for improvement is connecting the rise of Japanese militarism more directly to European events; the current explanation remains siloed. Recommendation: Practice synthesizing global events into a single, cohesive narrative. Specifically, focus on how trade barriers and resource scarcity globally accelerated isolationism and conflict. Overall readiness is excellent, but nuanced global context is needed."
+            };
+            // --- End Mock Data ---
+
+            try {
+                // In a real application, replace the mock data above with the actual fetch:
+                // const response = await fetch(`/api/teacher-assistant/report/${sessionId}`);
+                // if (!response.ok) {
+                //     const errorData = await response.json();
+                //     throw new Error(errorData.detail || 'Failed to load report');
+                // }
+                // const data = await response.json();
+
+
+                document.getElementById('topicValue').textContent = data.topic || 'N/A';
+                document.getElementById('gradeValue').textContent = data.grade || 'N/A';
+                document.getElementById('messagesValue').textContent = data.conversation_length || 0;
+                document.getElementById('dateValue').textContent = formatDate(data.generated_at);
+                document.getElementById('reportText').textContent = data.assessment_text || 'No assessment available.';
+                
+                document.title = `Dashboard - ${data.topic}`;
+                
+                showContent();
+            } catch (error) {
+                console.error('Error loading report:', error);
+                showError('An unexpected error occurred while fetching the data.');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', loadReport);
+    </script>
+</body>
+</html>

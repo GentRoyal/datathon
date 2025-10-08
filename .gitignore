@@ -1,0 +1,11 @@
+# Ignore configuration file
+config.py
+
+# Ignore environment variables file
+.env
+
+# Ignore VS Code settings folder
+.vscode/
+
+# Ignore Python cache files
+__pycache__/

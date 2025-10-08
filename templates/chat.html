@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Coach - Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #f5f7fa;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 16px 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            font-size: 20px;
+            color: #1976d2;
+            font-weight: 700;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .logo:hover {
+            opacity: 0.8;
+        }
+
+        .session-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .new-session-btn {
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #374151;
+            transition: all 0.2s;
+        }
+
+        .new-session-btn:hover {
+            background: #f9fafb;
+            border-color: #d1d5db;
+        }
+
+        /* Main Layout */
+        .main-container {
+            flex: 1;
+            display: flex;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            gap: 24px;
+            padding: 24px;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        /* Sidebar - KPIs */
+        .sidebar {
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .kpi-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e5e7eb;
+        }
+
+        .kpi-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .progress-circle {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 16px;
+            position: relative;
+        }
+
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring-circle {
+            stroke: #e5e7eb;
+            fill: transparent;
+            stroke-width: 8;
+        }
+
+        .progress-ring-progress {
+            stroke: #1976d2;
+            fill: transparent;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .progress-percentage {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1976d2;
+        }
+
+        .progress-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .phase-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .phase-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .phase-item.active {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+        }
+
+        .phase-item.completed {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+        }
+
+        .phase-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .phase-item .phase-icon {
+            background: #e5e7eb;
+        }
+
+        .phase-item.active .phase-icon {
+            background: #1976d2;
+            color: white;
+        }
+
+        .phase-item.completed .phase-icon {
+            background: #22c55e;
+            color: white;
+        }
+
+        .phase-info {
+            flex: 1;
+        }
+
+        .phase-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .phase-status {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .stat-box {
+            background: #f9fafb;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1976d2;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fafbfc;
+        }
+
+        .current-phase {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .phase-badge {
+            background: #1976d2;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .messages {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        /* ------------------------------------------- */
+        /* NEW STYLES FOR SELECTION FORM */
+        /* ------------------------------------------- */
+        .pre-chat-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .pre-chat-form h2 {
+            font-size: 28px;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        .pre-chat-form p {
+            font-size: 16px;
+            color: #6b7280;
+            margin-bottom: 30px;
+            max-width: 500px;
+        }
+
+        .form-group {
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+            appearance: none; /* Remove default arrow */
+            background: white url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236B7280'%3e%3cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3e%3c/svg%3e") no-repeat right 12px center;
+            background-size: 1.5em;
+        }
+        
+        .start-session-button {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, opacity 0.2s;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .start-session-button:hover:not(:disabled) {
+            background: #1565c0;
+        }
+
+        .start-session-button:disabled {
+            background: #90caf9;
+            cursor: not-allowed;
+        }
+        /* ------------------------------------------- */
+
+
+        .message {
+            display: flex;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+            max-width: 80%;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+        }
+
+        .message.teacher {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .message.assistant .avatar {
+            background: #1976d2;
+            color: white;
+        }
+
+        .message.teacher .avatar {
+            background: #22c55e;
+            color: white;
+        }
+
+        .message-content {
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        .message.assistant .message-content {
+            background: #f3f4f6;
+            color: #1f2937;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.teacher .message-content {
+            background: #1976d2;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 4px;
+        }
+
+        .input-area {
+            padding: 16px 24px;
+            border-top: 1px solid #e5e7eb;
+            background: white;
+            /* Hide the input area initially */
+            display: none; 
+        }
+
+        /* Show input area when active */
+        .chat-area.active .input-area {
+            display: block;
+        }
+        
+        /* Hide messages container content when form is showing */
+        .chat-area:not(.active) .messages {
+            padding: 0;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.2s;
+            resize: none;
+            min-height: 44px;
+            max-height: 120px;
+            font-family: inherit;
+        }
+
+        #messageInput:focus {
+            border-color: #1976d2;
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+        }
+
+        #sendButton {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            height: 44px;
+        }
+
+        #sendButton:hover:not(:disabled) {
+            background: #1565c0;
+        }
+
+        #sendButton:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading-indicator {
+            display: flex;
+            gap: 6px;
+            padding: 12px 16px;
+        }
+
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            background: #9ca3af;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        .completion-banner {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            padding: 20px 24px;
+            text-align: center;
+            border-radius: 8px;
+            margin: 16px 24px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .completion-banner h3 {
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+
+        .view-report-btn {
+            background: white;
+            color: #16a34a;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .view-report-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 16px 24px;
+            border-left: 4px solid #dc2626;
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-container {
+                padding: 16px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 12px 16px;
+            }
+
+            .session-info {
+                display: none;
+            }
+
+            .main-container {
+                padding: 12px;
+                gap: 0;
+            }
+
+            .messages {
+                padding: 16px;
+            }
+
+            .message {
+                max-width: 90%;
+            }
+
+            .input-area {
+                padding: 12px 16px;
+            }
+        }
+
+        /* Custom Scrollbar */
+        .messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .messages::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .messages::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <a href="http://127.0.0.1:8000/" class="logo">Knowledge Coach</a>
+        </div>
+        <div class="session-info">
+            <span id="sessionTime">Session: 0:00</span>
+            <button class="new-session-btn" onclick="startNewSession()">New Session</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <aside class="sidebar">
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    Overall Progress
+                </div>
+                <div class="progress-circle">
+                    <svg class="progress-ring" width="120" height="120">
+                        <circle class="progress-ring-circle" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/>
+                        <circle class="progress-ring-progress" id="progressCircle" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/>
+                    </svg>
+                    <div class="progress-text">
+                        <div class="progress-percentage" id="progressPercent">0%</div>
+                        <div class="progress-label">Complete</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    Learning Journey
+                </div>
+                <div class="phase-list" id="phaseList">
+                    <div class="phase-item active" data-phase="INITIAL_ASSESSMENT">
+                        <div class="phase-icon">1</div>
+                        <div class="phase-info">
+                            <div class="phase-name">Initial Assessment</div>
+                            <div class="phase-status">In Progress</div>
+                        </div>
+                    </div>
+                    <div class="phase-item" data-phase="CONCEPT_EXPLORATION">
+                        <div class="phase-icon">2</div>
+                        <div class="phase-info">
+                            <div class="phase-name">Concept Exploration</div>
+                            <div class="phase-status">Not Started</div>
+                        </div>
+                    </div>
+                    <div class="phase-item" data-phase="PEDAGOGY_DEVELOPMENT">
+                        <div class="phase-icon">3</div>
+                        <div class="phase-info">
+                            <div class="phase-name">Pedagogy Development</div>
+                            <div class="phase-status">Not Started</div>
+                        </div>
+                    </div>
+                    <div class="phase-item" data-phase="CULTURAL_INTEGRATION">
+                        <div class="phase-icon">4</div>
+                        <div class="phase-info">
+                            <div class="phase-name">Cultural Integration</div>
+                            <div class="phase-status">Not Started</div>
+                        </div>
+                    </div>
+                    <div class="phase-item" data-phase="ROLEPLAY">
+                        <div class="phase-icon">5</div>
+                        <div class="phase-info">
+                            <div class="phase-name">Roleplay Scenarios</div>
+                            <div class="phase-status">Not Started</div>
+                        </div>
+                    </div>
+                    <div class="phase-item" data-phase="FINAL_ASSESSMENT">
+                        <div class="phase-icon">6</div>
+                        <div class="phase-info">
+                            <div class="phase-name">Final Assessment</div>
+                            <div class="phase-status">Not Started</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    Session Stats
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value" id="messageCount">0</div>
+                        <div class="stat-label">Messages</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="questionsAnswered">0</div>
+                        <div class="stat-label">Questions</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="chat-area" id="chatArea">
+            <div class="chat-header">
+                <div class="current-phase">
+                    <span style="font-size: 14px; color: #6b7280;">Current Phase:</span>
+                    <div class="phase-badge" id="currentPhaseBadge">Starting...</div>
+                </div>
+            </div>
+
+            <div class="messages" id="messagesContainer">
+                </div>
+
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <textarea 
+                        id="messageInput" 
+                        placeholder="Type your response..."
+                        rows="1"
+                    ></textarea>
+                    <button id="sendButton">Send</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let sessionId = sessionStorage.getItem('session_id');
+        const chatArea = document.getElementById('chatArea');
+        const messagesContainer = document.getElementById('messagesContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const currentPhaseBadge = document.getElementById('currentPhaseBadge');
+        
+        let messageCount = 0;
+        let questionsAnswered = 0;
+        let sessionStartTime = Date.now();
+        let isAssessmentComplete = false;
+
+        const phaseNames = {
+            'INITIAL_ASSESSMENT': 'Initial Assessment',
+            'CONCEPT_EXPLORATION': 'Concept Exploration',
+            'PEDAGOGY_DEVELOPMENT': 'Pedagogy Development',
+            'CULTURAL_INTEGRATION': 'Cultural Integration',
+            'READINESS_CHECK': 'Readiness Check',
+            'STUDENT_ROLEPLAY': 'Student Roleplay',
+            'PARENT_ROLEPLAY': 'Parent Roleplay',
+            'ADMINISTRATOR_ROLEPLAY': 'Administrator Roleplay',
+            'FINAL_ASSESSMENT': 'Final Assessment'
+        };
+
+        // Nigerian Curriculum Data (based on previous logic/standard)
+        const CURRICULUM_DATA = {
+            'Primary 1': ["English Studies", "Mathematics", "Basic Science & Technology", "Cultural & Creative Arts", "Christian Religious Studies", "Islamic Studies", "Physical & Health Education"],
+            'Primary 2': ["English Studies", "Mathematics", "Basic Science & Technology", "Cultural & Creative Arts", "Christian Religious Studies", "Islamic Studies", "Physical & Health Education"],
+            'Primary 3': ["English Studies", "Mathematics", "Basic Science & Technology", "Cultural & Creative Arts", "Christian Religious Studies", "Islamic Studies", "Physical & Health Education"],
+            'Primary 4': ["English Studies", "Mathematics", "Basic Science & Technology", "Basic Digital Literacy", "Cultural & Creative Arts", "Christian Religious Studies", "Islamic Studies", "Physical & Health Education"],
+            'Primary 5': ["English Studies", "Mathematics", "Basic Science & Technology", "Basic Digital Literacy", "Cultural & Creative Arts", "Christian Religious Studies", "Islamic Studies", "Physical & Health Education"],
+            'Primary 6': ["English Studies", "Mathematics", "Basic Science & Technology", "Basic Digital Literacy", "Cultural & Creative Arts", "Christian Religious Studies", "Islamic Studies", "Physical & Health Education"],
+            'JSS 1': ["Mathematics", "English Language", "Integrated Science", "Digital Technology", "Social Studies"],
+            'JSS 2': ["Mathematics", "English Language", "Integrated Science", "Digital Technology", "Social Studies"],
+            'JSS 3': ["Mathematics", "English Language", "Integrated Science", "Digital Technology", "Social Studies"],
+            'SSS 1': ["Mathematics", "English Language", "Physics", "Chemistry", "Biology", "Digital Technologies", "Economics", "Literature-in-English"],
+            'SSS 2': ["Mathematics", "English Language", "Physics", "Chemistry", "Biology", "Digital Technologies", "Economics", "Literature-in-English"],
+            'SSS 3': ["Mathematics", "English Language", "Physics", "Chemistry", "Biology", "Digital Technologies", "Economics", "Literature-in-English"]
+        };
+        
+        const ALL_CLASSES = Object.keys(CURRICULUM_DATA);
+
+
+        // Auto-resize textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+
+        // Session timer
+        setInterval(() => {
+            const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            document.getElementById('sessionTime').textContent = 
+                `Session: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }, 1000);
+
+        // Initialize
+        if (!sessionId) {
+            renderSelectionForm();
+        } else {
+            loadConversationHistory();
+        }
+        
+        updateProgress(0, 6);
+        
+        // -------------------------------------------------------------
+        // NEW FRONT-END LOGIC FOR SELECTION FORM
+        // -------------------------------------------------------------
+
+        function renderSelectionForm() {
+            messagesContainer.innerHTML = `
+                <div class="pre-chat-form">
+                    <h2>Welcome to Knowledge Coach! 🚀</h2>
+                    <p>Select the class and subject you wish to be tested on to begin your professional development session.</p>
+                    
+                    <div class="form-group">
+                        <label for="classSelect">1. Select Class Level</label>
+                        <select id="classSelect">
+                            <option value="">-- Choose a Class --</option>
+                            ${ALL_CLASSES.map(cls => `<option value="${cls}">${cls}</option>`).join('')}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subjectSelect">2. Select Subject</label>
+                        <select id="subjectSelect" disabled>
+                            <option value="">-- Choose a Class First --</option>
+                        </select>
+                    </div>
+
+                    <button id="startChatButton" class="start-session-button" disabled>Start Session</button>
+                </div>
+            `;
+            
+            // Set chat area to non-active state (hides input bar)
+            chatArea.classList.remove('active');
+
+            const classSelect = document.getElementById('classSelect');
+            const subjectSelect = document.getElementById('subjectSelect');
+            const startChatButton = document.getElementById('startChatButton');
+
+            classSelect.addEventListener('change', () => updateSubjectDropdown(classSelect, subjectSelect, startChatButton));
+            subjectSelect.addEventListener('change', () => checkFormValidity(classSelect, subjectSelect, startChatButton));
+            startChatButton.addEventListener('click', handleStartChat);
+        }
+        
+        function updateSubjectDropdown(classSelect, subjectSelect, startChatButton) {
+            const selectedClass = classSelect.value;
+            subjectSelect.innerHTML = '';
+            startChatButton.disabled = true;
+
+            if (selectedClass && CURRICULUM_DATA[selectedClass]) {
+                const subjects = CURRICULUM_DATA[selectedClass];
+                subjectSelect.disabled = false;
+                
+                // Add default option
+                const defaultOption = document.createElement('option');
+                defaultOption.value = "";
+                defaultOption.textContent = `-- Choose a Subject for ${selectedClass} --`;
+                subjectSelect.appendChild(defaultOption);
+
+                // Add available subjects
+                subjects.forEach(subject => {
+                    const option = document.createElement('option');
+                    option.value = subject;
+                    option.textContent = subject;
+                    subjectSelect.appendChild(option);
+                });
+            } else {
+                subjectSelect.disabled = true;
+                const option = document.createElement('option');
+                option.value = "";
+                option.textContent = selectedClass ? "No subjects found for this class" : "-- Choose a Class First --";
+                subjectSelect.appendChild(option);
+            }
+            
+            checkFormValidity(classSelect, subjectSelect, startChatButton);
+        }
+
+        function checkFormValidity(classSelect, subjectSelect, startChatButton) {
+            startChatButton.disabled = !(classSelect.value && subjectSelect.value);
+        }
+
+        async function handleStartChat() {
+            const classSelect = document.getElementById('classSelect');
+            const subjectSelect = document.getElementById('subjectSelect');
+            const startChatButton = document.getElementById('startChatButton');
+
+            const selectedClass = classSelect.value;
+            const selectedSubject = subjectSelect.value;
+            
+            if (!selectedClass || !selectedSubject) {
+                showError("Please select both a Class and a Subject.");
+                return;
+            }
+
+            // Disable button and show loading state
+            startChatButton.disabled = true;
+            startChatButton.textContent = "Starting Session...";
+
+            await startNewConversation(selectedClass, selectedSubject);
+        }
+
+        // -------------------------------------------------------------
+        // MODIFIED CORE FUNCTIONS
+        // -------------------------------------------------------------
+        
+        async function startNewConversation(grade, subject) {
+            try {
+                // Clear any pre-chat content
+                messagesContainer.innerHTML = ''; 
+                showLoading();
+                
+                const response = await fetch('/api/teacher-assistant/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        grade: grade, 
+                        subject: subject 
+                    })
+                });
+                
+                removeLoading();
+
+                if (!response.ok) throw new Error('Failed to start conversation');
+                
+                const data = await response.json();
+                sessionId = data.session_id;
+                sessionStorage.setItem('session_id', sessionId);
+                
+                // Enable chat input and activate chat area
+                chatArea.classList.add('active'); 
+
+                addMessage('assistant', data.message);
+                updatePhase(data.phase || 'INITIAL_ASSESSMENT');
+                messageInput.focus();
+
+            } catch (error) {
+                console.error('Error:', error);
+                removeLoading();
+                showError('Failed to start conversation. Please try again.');
+                renderSelectionForm(); // Revert to form if starting fails
+            }
+        }
+
+        async function loadConversationHistory() {
+            try {
+                const response = await fetch(`/api/teacher-assistant/history/${sessionId}`);
+                
+                if (!response.ok) {
+                    // If history fails to load, start a new one (which goes to the selection form)
+                    renderSelectionForm(); 
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                // If history is loaded, activate chat area
+                chatArea.classList.add('active'); 
+                messagesContainer.innerHTML = '';
+                
+                data.history.forEach(msg => {
+                    addMessage(msg.role, msg.content, false);
+                });
+                
+                updatePhase(data.current_phase);
+                isAssessmentComplete = data.is_complete || false;
+                
+                if (isAssessmentComplete) {
+                    showCompletionBanner();
+                }
+                
+                updateKPIs();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Failed to load conversation history. Starting new session.');
+                renderSelectionForm();
+            }
+        }
+        
+        // ... (The rest of your existing functions: sendMessage, addMessage, formatMessage, 
+        // showLoading, removeLoading, updatePhase, updateProgress, initializeProgressCircle, 
+        // updateKPIs, showCompletionBanner, viewReport, showError, scrollToBottom, 
+        // startNewSession, and Event listeners remain the same.)
+        
+        // -------------------------------------------------------------
+        // ... REST OF THE JAVASCRIPT FUNCTIONS ... 
+        // (Ensure these are present below the modifications above)
+        // -------------------------------------------------------------
+        
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message || !sessionId) return;
+
+            messageInput.disabled = true;
+            sendButton.disabled = true;
+
+            addMessage('teacher', message);
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            questionsAnswered++;
+
+            showLoading();
+
+            try {
+                const response = await fetch('/api/teacher-assistant/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        message: message
+                    })
+                });
+
+                if (!response.ok) throw new Error('Failed to send message');
+
+                const data = await response.json();
+
+                removeLoading();
+                addMessage('assistant', data.assistant_message);
+                updatePhase(data.current_phase);
+                updateKPIs();
+
+                if (data.is_complete && !isAssessmentComplete) {
+                    isAssessmentComplete = true;
+                    showCompletionBanner();
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                removeLoading();
+                showError('Failed to send message. Please try again.');
+            } finally {
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                messageInput.focus();
+            }
+        }
+
+        function addMessage(role, content, scroll = true) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const avatarText = role === 'assistant' ? 'AI' : 'You';
+            const time = new Date().toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            messageDiv.innerHTML = `
+                <div class="avatar">${avatarText}</div>
+                <div>
+                    <div class="message-content">${formatMessage(content)}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            if (scroll) scrollToBottom();
+            
+            messageCount++;
+            document.getElementById('messageCount').textContent = messageCount;
+        }
+
+        function formatMessage(text) {
+            return text
+                .replace(/\n/g, '<br>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>');
+        }
+
+        function showLoading() {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message assistant';
+            loadingDiv.id = 'loadingMessage';
+            loadingDiv.innerHTML = `
+                <div class="avatar">AI</div>
+                <div class="message-content loading-indicator">
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                </div>
+            `;
+            messagesContainer.appendChild(loadingDiv);
+            scrollToBottom();
+        }
+
+        function removeLoading() {
+            const loading = document.getElementById('loadingMessage');
+            if (loading) loading.remove();
+        }
+
+        function updatePhase(phase) {
+            const normalizedPhase = phase.toUpperCase();
+            
+            currentPhaseBadge.textContent = phaseNames[normalizedPhase] || phase;
+            
+            const phaseItems = document.querySelectorAll('.phase-item');
+            const phaseOrder = [
+                'INITIAL_ASSESSMENT', 
+                'CONCEPT_EXPLORATION', 
+                'PEDAGOGY_DEVELOPMENT', 
+                'CULTURAL_INTEGRATION', 
+                'ROLEPLAY',
+                'FINAL_ASSESSMENT'
+            ];
+            
+            let currentIndex = phaseOrder.indexOf(normalizedPhase);
+            
+            // Adjust for specific roleplay sub-phases
+            if (normalizedPhase === 'STUDENT_ROLEPLAY' || normalizedPhase === 'PARENT_ROLEPLAY' || 
+                normalizedPhase === 'ADMINISTRATOR_ROLEPLAY' || normalizedPhase === 'READINESS_CHECK') {
+                currentIndex = 4; // Map all sub-phases to the main 'ROLEPLAY' index
+            }
+            
+            if (currentIndex === -1) {
+                currentIndex = 0;
+            }
+            
+            phaseItems.forEach((item, index) => {
+                const statusEl = item.querySelector('.phase-status');
+                item.classList.remove('active', 'completed');
+                
+                // Skip the special case for the unlisted READINESS_CHECK sub-phase in the visual list.
+                const visualPhaseIndex = index;
+
+                if (visualPhaseIndex < currentIndex) {
+                    item.classList.add('completed');
+                    statusEl.textContent = 'Completed';
+                } else if (visualPhaseIndex === currentIndex) {
+                    item.classList.add('active');
+                    statusEl.textContent = 'In Progress';
+                } else {
+                    statusEl.textContent = 'Not Started';
+                }
+            });
+            
+            updateProgress(currentIndex, phaseOrder.length);
+        }
+
+        function updateProgress(current, total) {
+            const percentage = Math.round(((current + 1) / total) * 100);
+            document.getElementById('progressPercent').textContent = `${percentage}%`;
+            
+            const circle = document.getElementById('progressCircle');
+            const radius = 52;
+            const circumference = radius * 2 * Math.PI;
+            const offset = circumference - (percentage / 100) * circumference;
+            
+            circle.style.strokeDasharray = `${circumference} ${circumference}`;
+            circle.style.strokeDashoffset = circumference;
+            
+            setTimeout(() => {
+                circle.style.strokeDashoffset = offset;
+            }, 100);
+        }
+        
+        function initializeProgressCircle() {
+            const circle = document.getElementById('progressCircle');
+            const radius = 52;
+            const circumference = radius * 2 * Math.PI;
+            circle.style.strokeDasharray = `${circumference} ${circumference}`;
+            circle.style.strokeDashoffset = circumference;
+        }
+        
+        initializeProgressCircle();
+
+        function updateKPIs() {
+            document.getElementById('questionsAnswered').textContent = questionsAnswered;
+        }
+
+        function showCompletionBanner() {
+            const banner = document.createElement('div');
+            banner.className = 'completion-banner';
+            banner.innerHTML = `
+                <h3>Assessment Complete!</h3>
+                <p>Your comprehensive readiness report is ready to view.</p>
+                <button class="view-report-btn" onclick="viewReport()">View Detailed Report</button>
+            `;
+            messagesContainer.appendChild(banner);
+            scrollToBottom();
+        }
+
+        function viewReport() {
+            window.location.href = `/report?session_id=${sessionId}`;
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            messagesContainer.appendChild(errorDiv);
+            scrollToBottom();
+            
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function startNewSession() {
+            if (confirm('Start a new session? Current progress will be lost.')) {
+                sessionStorage.removeItem('session_id');
+                location.reload();
+            }
+        }
+
+        // Event listeners
+        sendButton.addEventListener('click', sendMessage);
+        
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        if (sessionId) {
+            messageInput.focus();
+        }
+
+    </script>
+</body>
+</html>
