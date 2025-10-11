@@ -4,6 +4,8 @@ from langchain.schema import HumanMessage, AIMessage
 from typing import List, Dict, Optional
 import os
 
+from config import Config
+config = Config()
 
 class KnowledgeCompressor:
     """Handles compression of educational material into print-optimized teaching briefs"""
@@ -30,15 +32,15 @@ class KnowledgeCompressor:
 
     Generate the compressed teaching brief now:"""
         
-    def __init__(self, api_key: Optional[str] = None, model: str = "llama-3.1-8b-instant"):
+    def __init__(self, api_key: Optional[str] = None, model: str = config.GROQ_MODEL):
         """
         Initialize the Knowledge Compressor
         
         Args:
-            api_key: Groq API key (defaults to GROQ_API_KEY env variable)
+            api_key: Groq API key 
             model: Groq model to use
         """
-        self.api_key = api_key or os.getenv("GROQ_API_KEY")
+        self.api_key = config.GROQ_API_KEY
         if not self.api_key:
             raise ValueError("GROQ_API_KEY must be provided or set as environment variable")
         
@@ -133,7 +135,7 @@ class ContextualChatAssistant:
 
     Your response:"""
     
-    def __init__(self, api_key: Optional[str] = None, model: str = "llama-3.1-8b-instant"):
+    def __init__(self, api_key: Optional[str] = None, model: str = config.GROQ_MODEL):
         """
         Initialize the Contextual Chat Assistant
         
@@ -141,7 +143,7 @@ class ContextualChatAssistant:
             api_key: Groq API key (defaults to GROQ_API_KEY env variable)
             model: Groq model to use
         """
-        self.api_key = api_key or os.getenv("GROQ_API_KEY")
+        self.api_key = config.GROQ_API_KEY
         if not self.api_key:
             raise ValueError("GROQ_API_KEY must be provided or set as environment variable")
         
@@ -224,7 +226,7 @@ class ContextualChatAssistant:
 class KnowledgeCompressionSystem:
     """Main system that combines compression and chat functionality"""
     
-    def __init__(self, api_key: Optional[str] = None, model: str = "llama-3.1-8b-instant"):
+    def __init__(self, api_key: Optional[str] = None, model: str = config.GROQ_MODEL):
         """
         Initialize the complete Knowledge Compression System
         

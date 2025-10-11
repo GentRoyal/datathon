@@ -245,3 +245,5 @@ def greeting_templates(subject, grade):
 
     return templates
 
+def get_prompts():
+    pass

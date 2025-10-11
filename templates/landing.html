@@ -893,6 +893,23 @@
             });
         }
 
+        function handleDashboard() {
+            fetch('/api/knowledge-assistant/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                window.location.href = '/knowledge';
+            })
+            .catch(error => {
+                console.error('Error starting page:', error);
+                alert('Failed to start page. Please try again.');
+            });
+        }
+
         function handleKnowledge() {
             fetch('/api/knowledge-assistant/start', {
                 method: 'POST',

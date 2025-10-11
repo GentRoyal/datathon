@@ -8,7 +8,10 @@ from langchain.prompts import ChatPromptTemplate, PromptTemplate
 from langchain.chains import LLMChain
 from langchain.output_parsers import PydanticOutputParser
 
-from scripts.services.templates import greeting_templates
+from config import Config
+config = Config()
+
+from scripts.core.templates import greeting_templates
 from scripts.core.model_schema import (
     ConversationPhase,
     CulturalContext,
@@ -17,10 +20,9 @@ from scripts.core.model_schema import (
     ReadinessAssessment
 )
 
-
 CULTURAL_CONTEXTS = {
     CulturalContext.NIGERIAN: CulturalElements(
-        proverbs=[
+        proverbs = [
             "A child who says his mother will not sleep, he too will not sleep",
             "The lizard that jumped from the high Iroko tree said he would praise himself if no one else did",
             "No matter how long a log stays in the river, it does not become a crocodile",
@@ -61,13 +63,9 @@ class AssistantConfig:
     max_questions_per_phase: int = 2
     enable_dynamic_scenarios: bool = True
     temperature: float = 0.7
-    model_name: str = "llama-3.1-8b-instant"
+    model_name: str = config.GROQ_MODEL
     cultural_context: CulturalContext = CulturalContext.NIGERIAN
 
-
-# ============================================================================
-# Conversational AI Teacher's Assistant
-# ============================================================================
 
 class ConversationalTeacherAssistant:
     """
@@ -104,10 +102,6 @@ class ConversationalTeacherAssistant:
 
         # Roleplay character names
         self.student_name: Optional[str] = None
-
-    # ========================================================================
-    # Public Interface Methods
-    # ========================================================================
 
     def start_conversation(self, grade: Optional[str] = None, subject: Optional[str] = None) -> str:
         """
@@ -279,10 +273,6 @@ class ConversationalTeacherAssistant:
         })
 
         return error_message
-
-    # ========================================================================
-    # Phase Handlers
-    # ========================================================================
 
     def _handle_initial_assessment(self, response: str) -> str:
         """Extract basic information and move to concept exploration"""

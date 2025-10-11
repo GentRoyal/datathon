@@ -8,7 +8,7 @@ from fastapi import HTTPException
 
 from langchain_community.embeddings import HuggingFaceEmbeddings
 
-from scripts.services.database import execute_query
+from scripts.core.database import execute_query
 
 from config import Config
 config = Config()

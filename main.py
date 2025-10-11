@@ -10,6 +10,7 @@ from fastapi.responses import FileResponse
 
 from scripts.api.chat_system import router as chat_router
 from scripts.api.ingest_document import router as document_router
+from scripts.api.feature3 import router as needs_analysis_router 
 
 load_dotenv()
 
@@ -75,6 +76,17 @@ async def upload_document():
     if report_page_path.exists():
         return FileResponse(report_page_path)
     return {"message": "Knowledge Compressor interface not found", "redirect": "/"}
+
+
+app.include_router(needs_analysis_router)
+@app.get("/teacher_needs")
+async def teacher_needs():
+    """Serve the report interface"""
+    report_page_path = Path(__file__).parent / "templates" / "dashboard.html"
+    
+    if report_page_path.exists():
+        return FileResponse(report_page_path)
+    return {"message": "Need Analysis Interface Not Found", "redirect": "/"}
 
 # Health check endpoint
 @app.get("/health")
