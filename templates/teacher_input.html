@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Needs Analysis - Input</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 48px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            font-size: 16px;
+            margin-bottom: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .label-optional {
+            font-weight: 400;
+            color: #9ca3af;
+            font-size: 13px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 180px;
+            padding: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            resize: vertical;
+            transition: all 0.3s;
+            line-height: 1.6;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea::placeholder {
+            color: #9ca3af;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .topics-input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .topic-input-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .topic-input-row input {
+            flex: 1;
+        }
+
+        .btn-remove {
+            padding: 12px 16px;
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-remove:hover {
+            background: #fecaca;
+        }
+
+        .btn-add {
+            padding: 10px 16px;
+            background: #f3f4f6;
+            color: #374151;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .btn-add:hover {
+            background: #e5e7eb;
+            border-color: #9ca3af;
+        }
+
+        .context-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 32px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .char-counter {
+            font-size: 12px;
+            color: #9ca3af;
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 20px;
+            border: 4px solid #f3f4f6;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+            border-left: 4px solid #dc2626;
+            font-size: 14px;
+            display: none;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 32px 24px;
+            }
+
+            .context-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .logo {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">Lesson CoPilot</div>
+        <div class="subtitle">Tell us about your teaching needs and we'll create a personalized development plan</div>
+
+        <form id="analysisForm">
+            <div class="form-group">
+                <label for="teacherInput">
+                    What would you like help with? 
+                    <span style="color: #dc2626;">*</span>
+                </label>
+                <textarea 
+                    id="teacherInput" 
+                    name="teacher_input" 
+                    placeholder="Example: I feel confident in Python but nervous about teaching AI/ML modules. I've never used hands-on AI tools before..."
+                    required
+                    minlength="20"
+                ></textarea>
+                <div class="char-counter">
+                    <span id="charCount">0</span> characters
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="topics">
+                    Curriculum Topics <span class="label-optional">(optional - add topics you need to teach)</span>
+                </label>
+                <div class="topics-input-container" id="topicsContainer">
+                    <div class="topic-input-row">
+                        <input type="text" placeholder="e.g., Artificial Intelligence Fundamentals" class="topic-input">
+                        <button type="button" class="btn-remove" onclick="removeTopic(this)" style="display: none;">Remove</button>
+                    </div>
+                </div>
+                <button type="button" class="btn-add" onclick="addTopicField()">+ Add Another Topic</button>
+            </div>
+
+            <div class="form-group">
+                <label>Additional Context <span class="label-optional">(optional)</span></label>
+                <div class="context-grid">
+                    <div>
+                        <label for="yearsExp" style="font-size: 13px; margin-bottom: 4px;">Years of Experience</label>
+                        <input type="number" id="yearsExp" name="years_experience" min="0" max="50" placeholder="e.g., 5">
+                    </div>
+                    <div>
+                        <label for="subject" style="font-size: 13px; margin-bottom: 4px;">Subject Background</label>
+                        <input type="text" id="subject" name="subject_background" placeholder="e.g., Computer Science">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="analysisDepth">Analysis Depth</label>
+                <select id="analysisDepth" name="analysis_depth">
+                    <option value="quick">Quick Overview</option>
+                    <option value="standard">Standard Analysis</option>
+                    <option value="comprehensive" selected>Comprehensive Review</option>
+                </select>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+
+            <button type="submit" class="submit-btn">
+                Analyze My Needs →
+            </button>
+        </form>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <h3 style="margin-bottom: 8px; color: #1f2937;">Analyzing Your Needs</h3>
+            <p style="color: #6b7280; font-size: 14px;">This may take a few moments...</p>
+        </div>
+    </div>
+
+    <script>
+        const ANALYSIS_ENDPOINT = '/api/v1/needs/generate-dashboard';
+
+        // Character counter
+        const teacherInput = document.getElementById('teacherInput');
+        const charCount = document.getElementById('charCount');
+        
+        teacherInput.addEventListener('input', (e) => {
+            charCount.textContent = e.target.value.length;
+        });
+
+        // Dynamic topic fields
+        function addTopicField() {
+            const container = document.getElementById('topicsContainer');
+            const newRow = document.createElement('div');
+            newRow.className = 'topic-input-row';
+            newRow.innerHTML = `
+                <input type="text" placeholder="e.g., Robotics and Automation" class="topic-input">
+                <button type="button" class="btn-remove" onclick="removeTopic(this)">Remove</button>
+            `;
+            container.appendChild(newRow);
+        }
+
+        function removeTopic(button) {
+            button.parentElement.remove();
+        }
+
+        // Form submission
+        document.getElementById('analysisForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const errorMessage = document.getElementById('errorMessage');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const submitBtn = e.target.querySelector('.submit-btn');
+            
+            errorMessage.classList.remove('active');
+            
+            // Gather form data
+            const teacherText = teacherInput.value.trim();
+            
+            if (teacherText.length < 20) {
+                errorMessage.textContent = 'Please provide at least 20 characters describing your needs.';
+                errorMessage.classList.add('active');
+                return;
+            }
+
+            // Gather topics
+            const topicInputs = document.querySelectorAll('.topic-input');
+            const topics = Array.from(topicInputs)
+                .map(input => input.value.trim())
+                .filter(topic => topic.length > 0);
+
+            // Build request payload
+            const requestData = {
+                teacher_input: teacherText,
+                curriculum_topics: topics.length > 0 ? topics : [
+                    "Artificial Intelligence Fundamentals",
+                    "Robotics and Automation",
+                    "Data Structures in Python"
+                ],
+                analysis_depth: document.getElementById('analysisDepth').value,
+                context: {},
+                use_cache: true
+            };
+
+            // Add optional context
+            const yearsExp = document.getElementById('yearsExp').value;
+            const subject = document.getElementById('subject').value;
+            
+            if (yearsExp) requestData.context.years_experience = parseInt(yearsExp);
+            if (subject) requestData.context.subject_background = subject;
+
+            // Mock content catalog (in production, this would come from your backend)
+            const mockContentCatalog = {
+                "Artificial Intelligence Fundamentals": [
+                    { "content_id": "AI_101_video", "title": "AI: Visual Intro (Video)", "type": "video_series", "url": "/content/ai-fundamentals-v", "metadata": {"duration": "1 hour", "difficulty": "beginner", "format": "video"} },
+                    { "content_id": "AI_101_hands", "title": "AI: Hands-On Workshop", "type": "interactive_module", "url": "/content/ai-fundamentals-h", "metadata": {"duration": "3 hours", "difficulty": "intermediate", "format": "hands-on"} }
+                ],
+                "Robotics and Automation": [
+                    { "content_id": "ROBOT_101_quick", "title": "Robotics: 30 Min Quick Start", "type": "video_series", "url": "/content/robotics-quick", "metadata": {"duration": "30 min", "difficulty": "beginner", "format": "video"} }
+                ],
+                "Data Structures in Python": [
+                    { "content_id": "DS_101_guide", "title": "Advanced Python Data Structures Guide", "type": "document", "url": "/content/ds-guide", "metadata": {"duration": "2 hours", "difficulty": "intermediate", "format": "text"} }
+                ]
+            };
+
+            requestData.content_catalog = mockContentCatalog;
+
+            // Show loading
+            submitBtn.disabled = true;
+            loadingOverlay.classList.add('active');
+
+            try {
+                const response = await fetch(ANALYSIS_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`API returned status ${response.status}: ${errorText}`);
+                }
+
+                const dashboardData = await response.json();
+                
+                // Store results and navigate to dashboard
+                sessionStorage.setItem('dashboardData', JSON.stringify(dashboardData));
+                window.location.href = 'dashboard.html'; // Update with your actual dashboard page URL
+                
+            } catch (error) {
+                console.error('Analysis failed:', error);
+                errorMessage.textContent = `Error: ${error.message}. Please ensure your API server is running.`;
+                errorMessage.classList.add('active');
+                loadingOverlay.classList.remove('active');
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Allow Enter key to submit (but Shift+Enter for new line in textarea)
+        teacherInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('analysisForm').dispatchEvent(new Event('submit'));
+            }
+        });
+    </script>
+</body>
+</html>

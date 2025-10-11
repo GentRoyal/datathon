@@ -3,8 +3,8 @@ from langchain.prompts import ChatPromptTemplate
 from langchain.output_parsers import PydanticOutputParser
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
-from pydantic import BaseModel, Field, validator
-from typing import List, Dict, Optional, Callable, Any
+from pydantic import BaseModel
+from typing import List, Dict, Optional, Any
 from datetime import datetime
 from enum import Enum
 
@@ -37,70 +37,24 @@ class ReadinessStatus(str, Enum):
 
 
 class TopicReadinessScore(BaseModel):
-    """Model for individual topic readiness assessment"""
-    topic: str = Field(description="The curriculum topic being assessed")
-    readiness_score: float = Field(
-        description="Readiness score from 0.0 to 1.0",
-        ge=0.0,
-        le=1.0
-    )
-    confidence: float = Field(
-        description="Confidence in the assessment from 0.0 to 1.0",
-        ge=0.0,
-        le=1.0
-    )
-    identified_gaps: List[str] = Field(
-        description="Specific knowledge/skill gaps identified"
-    )
-    identified_strengths: List[str] = Field(
-        default_factory=list,
-        description="Specific strengths or existing knowledge identified"
-    )
-    evidence_quotes: List[str] = Field(
-        description="Direct quotes from teacher input supporting the assessment"
-    )
-    priority: PriorityLevel = Field(
-        description="Priority level for addressing this topic"
-    )
-    suggested_interventions: List[str] = Field(
-        default_factory=list,
-        description="Specific suggested interventions or approaches"
-    )
-
+    topic: str
+    readiness_score: float
+    confidence: float
+    identified_gaps: List[str]
+    identified_strengths: List[str]
+    evidence_quotes: List[str]
+    priority: str
+    suggested_interventions: List[str]
 
 class TeacherNeedsAnalysis(BaseModel):
-    """Complete analysis of teacher needs across all topics"""
-    teacher_id: Optional[str] = Field(
-        default=None,
-        description="Identifier for the teacher"
-    )
-    analysis_timestamp: datetime = Field(
-        default_factory=datetime.now,
-        description="When this analysis was performed"
-    )
-    overall_readiness: float = Field(
-        description="Overall readiness score across all topics",
-        ge=0.0,
-        le=1.0
-    )
-    topic_scores: List[TopicReadinessScore] = Field(
-        description="Readiness scores for each curriculum topic"
-    )
-    recommended_pathways: List[str] = Field(
-        description="Ordered list of topics to address based on priority"
-    )
-    summary: str = Field(
-        description="Brief summary of the teacher's overall readiness and needs"
-    )
-    emotional_indicators: Dict[str, str] = Field(
-        default_factory=dict,
-        description="Detected emotional states (anxiety, confidence, enthusiasm, etc.)"
-    )
-    learning_style_hints: List[str] = Field(
-        default_factory=list,
-        description="Inferred learning preferences from input"
-    )
-    
+    teacher_id: Optional[str] = None
+    analysis_timestamp: datetime = datetime.now()
+    overall_readiness: float
+    topic_scores: List[TopicReadinessScore]
+    recommended_pathways: List[str]
+    summary: str
+    emotional_indicators: Dict[str, str]
+    learning_style_hints: List[str]
 
 class AnalysisCache:
     """Simple in-memory cache for analysis results"""
@@ -151,16 +105,6 @@ class TeacherNeedsEngine:
     ):
         """
         Initialize the needs analysis engine.
-        
-        Args:
-            api_key: API key for Groq
-            model: Name of the Groq model to use
-            temperature: Temperature for LLM generation
-            enable_streaming: Enable streaming output
-            enable_caching: Enable caching of analysis results
-            cache_size: Maximum cache size
-            custom_prompt_template: Custom prompt template (optional)
-            max_retries: Maximum number of retries for API calls
         """
         callbacks = None
         if enable_streaming:
@@ -201,18 +145,7 @@ class TeacherNeedsEngine:
         analysis_depth: str = "comprehensive"
     ) -> TeacherNeedsAnalysis:
         """
-        Analyze unstructured teacher input to generate topic-specific readiness scores.
-        
-        Args:
-            teacher_input: Unstructured text from teacher (survey, transcript, notes)
-            curriculum_topics: List of curriculum topics to assess
-            teacher_id: Optional identifier for the teacher
-            context: Optional additional context (previous assessments, role, etc.)
-            use_cache: Whether to use cached results if available
-            analysis_depth: Level of analysis - "quick", "standard", or "comprehensive"
-        
-        Returns:
-            TeacherNeedsAnalysis object with readiness scores and recommendations
+        Analyze unstructured teacher input to generate topic-specific readiness scores
         """
         
         # Check cache first
@@ -232,15 +165,82 @@ class TeacherNeedsEngine:
         
         # Adjust analysis instructions based on depth
         depth_instructions = self._get_depth_instructions(analysis_depth)
-        
+        format_instructions = self.parser.get_format_instructions()
+
         # Use custom template if provided, otherwise use default
-        if self.custom_prompt_template:
-            template = self.custom_prompt_template
-        else:
-            template = self._get_default_prompt_template()
+        template = """
+        You are an expert educational analyst specializing in teacher professional development and curriculum readiness assessment.
+
+        Your task is to analyze the following unstructured input from a teacher and assess their readiness across specific curriculum topics. Extract nuanced insights from their own words to identify knowledge gaps, concerns, strengths, and areas for development.
+
+        Curriculum Topics to Assess:
+        {topics}
+
+        Teacher Input:
+        {teacher_input}
+        {context}
+
+        {depth_instructions}
+
+        Analysis Instructions:
+        1. For each curriculum topic, assign a readiness score from 0.0 (no readiness) to 1.0 (fully ready)
+        2. Identify specific knowledge or skill gaps mentioned or implied
+        3. Identify existing strengths and relevant prior knowledge
+        4. Extract direct quotes that support your assessment
+        5. Suggest specific interventions tailored to the identified gaps
+        6. Assign priority levels based on:
+        - critical: Fundamental gaps that block teaching ability
+        - high: Significant gaps that would impair teaching quality
+        - medium: Moderate gaps that could be addressed over time
+        - low: Minor gaps or areas of relative strength
+        7. Calculate an overall readiness score (weighted by priority)
+        8. Recommend a learning pathway (ordered list of topics to address)
+        9. Detect emotional indicators (anxiety, confidence, enthusiasm, overwhelm, etc.)
+        10. Infer learning style hints from how they describe their needs
+
+        Analyze the teacher input and return a JSON that EXACTLY matches this schema.
+        Do not change any field names or add extras.
+
+        {format_instructions}
+        """
         
         # Create the analysis prompt
         prompt = ChatPromptTemplate.from_template(template)
+        # format_instructions="Return your answer strictly as a valid JSON object that fits the TeacherNeedsAnalysis model — include actual values, not the schema or examples."
+        format_instructions = """
+Return ONLY a valid JSON object with this EXACT structure (replace examples with actual analysis):
+
+{
+    "teacher_id": "string or null",
+    "analysis_timestamp": "ISO datetime string",
+    "overall_readiness": 0.75,
+    "topic_scores": [
+        {
+            "topic": "Topic Name",
+            "readiness_score": 0.8,
+            "confidence": 0.7,
+            "identified_gaps": ["specific gap 1", "specific gap 2"],
+            "identified_strengths": ["strength 1", "strength 2"],
+            "evidence_quotes": ["direct quote from teacher input"],
+            "priority": "high",
+            "suggested_interventions": ["intervention 1", "intervention 2"]
+        }
+    ],
+    "recommended_pathways": ["topic to learn first", "topic to learn second"],
+    "summary": "Brief summary of overall readiness",
+    "emotional_indicators": {
+        "anxiety": "description if present",
+        "confidence": "description if present"
+    },
+    "learning_style_hints": ["hint 1", "hint 2"]
+}
+
+CRITICAL: 
+- Return ONLY the JSON object, no markdown, no explanations, no code blocks
+- All fields are required
+- Use actual analyzed values, not placeholders
+- priority must be one of: "critical", "high", "medium", "low"
+"""
         
         # Format the prompt
         formatted_prompt = prompt.format(
@@ -248,7 +248,7 @@ class TeacherNeedsEngine:
             teacher_input=teacher_input,
             context=context_str,
             depth_instructions=depth_instructions,
-            format_instructions=self.parser.get_format_instructions()
+            format_instructions = format_instructions
         )
         
         try:
@@ -274,51 +274,7 @@ class TeacherNeedsEngine:
         except Exception as e:
             logger.error(f"Error during analysis: {str(e)}")
             raise
-    
-    def _get_default_prompt_template(self) -> str:
-        """Get the default prompt template"""
-        return """You are an expert educational analyst specializing in teacher professional development and curriculum readiness assessment.
 
-Your task is to analyze the following unstructured input from a teacher and assess their readiness across specific curriculum topics. Extract nuanced insights from their own words to identify knowledge gaps, concerns, strengths, and areas for development.
-
-Curriculum Topics to Assess:
-{topics}
-
-Teacher Input:
-{teacher_input}
-{context}
-
-{depth_instructions}
-
-Analysis Instructions:
-1. For each curriculum topic, assign a readiness score from 0.0 (no readiness) to 1.0 (fully ready)
-2. Identify specific knowledge or skill gaps mentioned or implied
-3. Identify existing strengths and relevant prior knowledge
-4. Extract direct quotes that support your assessment
-5. Suggest specific interventions tailored to the identified gaps
-6. Assign priority levels based on:
-   - critical: Fundamental gaps that block teaching ability
-   - high: Significant gaps that would impair teaching quality
-   - medium: Moderate gaps that could be addressed over time
-   - low: Minor gaps or areas of relative strength
-7. Calculate an overall readiness score (weighted by priority)
-8. Recommend a learning pathway (ordered list of topics to address)
-9. Detect emotional indicators (anxiety, confidence, enthusiasm, overwhelm, etc.)
-10. Infer learning style hints from how they describe their needs
-
-Be nuanced and thorough. Look for:
-- Direct statements of uncertainty or lack of knowledge
-- Questions that reveal gaps
-- Concerns about teaching specific topics
-- Language that suggests discomfort or unfamiliarity
-- Absence of discussion about certain topics
-- Misconceptions or incorrect understanding
-- Expressions of confidence or existing knowledge
-- Emotional language that indicates stress, excitement, or worry
-- References to preferred learning methods or past experiences
-
-{format_instructions}
-"""
     
     def _get_depth_instructions(self, depth: str) -> str:
         """Get analysis depth-specific instructions"""
@@ -379,7 +335,7 @@ Be nuanced and thorough. Look for:
                     content = content_mapping[topic].copy()
                     content["triggered_by"] = {
                         "readiness_score": topic_score.readiness_score,
-                        "priority": topic_score.priority.value,
+                        "priority": topic_score.priority, #here
                         "identified_gaps": topic_score.identified_gaps,
                         "identified_strengths": topic_score.identified_strengths,
                         "evidence": topic_score.evidence_quotes,
@@ -396,20 +352,12 @@ Be nuanced and thorough. Look for:
     
     def generate_dashboard_data(
         self,
-        analysis: TeacherNeedsAnalysis,
-        triggered_content: List[Dict[str, Any]],
+        analysis,
         include_recommendations: bool = True
     ) -> Dict[str, Any]:
         """
         Generate structured data for teacher dashboard display.
-        
-        Args:
-            analysis: TeacherNeedsAnalysis object
-            triggered_content: List of triggered content from get_triggered_content
-            include_recommendations: Include detailed recommendations
-        
-        Returns:
-            Dictionary with dashboard display data
+
         """
         dashboard = {
             "teacher_id": analysis.teacher_id,
@@ -417,7 +365,7 @@ Be nuanced and thorough. Look for:
             "overall_readiness": {
                 "score": analysis.overall_readiness,
                 "percentage": round(analysis.overall_readiness * 100, 1),
-                "status": self._get_readiness_status(analysis.overall_readiness).value
+                "status": self._get_readiness_status(analysis.overall_readiness)
             },
             "summary": analysis.summary,
             "topic_breakdown": [
@@ -425,11 +373,11 @@ Be nuanced and thorough. Look for:
                     "topic": score.topic,
                     "score": score.readiness_score,
                     "percentage": round(score.readiness_score * 100, 1),
-                    "priority": score.priority.value,
+                    "priority": score.priority,
                     "confidence": score.confidence,
                     "gaps": score.identified_gaps,
                     "strengths": score.identified_strengths,
-                    "status": self._get_readiness_status(score.readiness_score).value,
+                    "status": self._get_readiness_status(score.readiness_score),
                     "interventions": score.suggested_interventions
                 }
                 for score in analysis.topic_scores
@@ -442,21 +390,20 @@ Be nuanced and thorough. Look for:
                 }
                 for idx, topic in enumerate(analysis.recommended_pathways)
             ],
-            "triggered_content": triggered_content,
-            "action_required": len(triggered_content) > 0,
+            # "triggered_content": triggered_content,
+            # "action_required": len(triggered_content) > 0,
             "emotional_indicators": analysis.emotional_indicators,
             "learning_style_hints": analysis.learning_style_hints
         }
         
         if include_recommendations:
-            dashboard["recommendations"] = self._generate_recommendations(analysis, triggered_content)
+            dashboard["recommendations"] = self._generate_recommendations(analysis)
         
         return dashboard
     
     def _generate_recommendations(
         self,
         analysis: TeacherNeedsAnalysis,
-        triggered_content: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
         """Generate actionable recommendations"""
         recommendations = {
@@ -521,169 +468,6 @@ Be nuanced and thorough. Look for:
             return ReadinessStatus.NEEDS_SUPPORT
         else:
             return ReadinessStatus.CRITICAL_NEED
-    
-# Example usage function
-def example_usage():
-    """
-    Example demonstrating how to use the enhanced TeacherNeedsEngine
-    """
-    
-    # Initialize the engine with enhanced features
-    engine = TeacherNeedsEngine(
-        api_key=api_key,
-        enable_caching=True,
-        enable_streaming=False
-    )
-    
-    # Define curriculum topics
-    curriculum_topics = [
-        "Artificial Intelligence Fundamentals",
-        "Robotics and Automation",
-        "Solar PV Technology",
-        "Machine Learning Basics",
-        "Programming for AI"
-    ]
-    
-    # Sample teacher input
-    teacher_input = """
-    I'm really excited about teaching the new curriculum, but I have to admit
-    I'm feeling quite overwhelmed. I've been teaching traditional science for 
-    15 years, but AI and robotics are completely new to me.
-    
-    I understand the basics of how solar panels work from our current physics
-    curriculum, so I think I can handle that part. But when it comes to AI,
-    I honestly don't even know where to start. What's the difference between
-    machine learning and AI? How do I explain neural networks to students when
-    I barely understand them myself?
-    
-    The robotics component also worries me. I've never programmed anything
-    beyond a basic calculator in Excel. How am I supposed to teach students
-    to program robots?
-    
-    I really want to do well with this, but I need help getting up to speed.
-    I learn best through hands-on practice and video tutorials.
-    """
-    
-    # Analyze teacher needs with comprehensive depth
-    analysis = engine.analyze_teacher_needs(
-        teacher_input=teacher_input,
-        curriculum_topics=curriculum_topics,
-        teacher_id="TEACHER_001",
-        context={
-            "years_experience": 15,
-            "subject_background": "Traditional Science",
-            "previous_training": "None in AI/Robotics"
-        },
-        analysis_depth="comprehensive"
-    )
-    
-    # Define content mapping
-    content_mapping = {
-        "Artificial Intelligence Fundamentals": {
-            "content_id": "AI_101",
-            "title": "AI Fundamentals: Compressed Teaching Brief",
-            "type": "interactive_module",
-            "url": "/content/ai-fundamentals",
-            "metadata": {"duration": "2 hours", "difficulty": "beginner", "format": "video"}
-        },
-        "Machine Learning Basics": {
-            "content_id": "ML_101",
-            "title": "Machine Learning for Teachers",
-            "type": "video_series",
-            "url": "/content/ml-basics",
-            "metadata": {"duration": "3 hours", "difficulty": "beginner", "format": "video"}
-        },
-        "Programming for AI": {
-            "content_id": "PROG_101",
-            "title": "Python Programming for AI Education",
-            "type": "hands_on_course",
-            "url": "/content/programming-ai",
-            "metadata": {"duration": "5 hours", "difficulty": "beginner", "format": "hands-on"}
-        },
-        "Robotics and Automation": {
-            "content_id": "ROBOT_101",
-            "title": "Robotics Teaching Essentials",
-            "type": "interactive_module",
-            "url": "/content/robotics",
-            "metadata": {"duration": "4 hours", "difficulty": "beginner", "format": "hands-on"}
-        },
-        "Solar PV Technology": {
-            "content_id": "SOLAR_101",
-            "title": "Solar PV: From Science to Practice",
-            "type": "reading_module",
-            "url": "/content/solar-pv",
-            "metadata": {"duration": "1.5 hours", "difficulty": "intermediate", "format": "text"}
-        }
-    }
-    
-    # Get triggered content with filters
-    triggered_content = engine.get_triggered_content(
-        analysis=analysis,
-        content_mapping=content_mapping,
-        threshold=0.7,
-        max_items=5,
-        priority_filter=[PriorityLevel.CRITICAL, PriorityLevel.HIGH]
-    )
-    
-    # Generate comprehensive dashboard data
-    dashboard_data = engine.generate_dashboard_data(
-        analysis=analysis,
-        triggered_content=triggered_content,
-        include_recommendations=True
-    )
-    
-    # Print results
-    print("=" * 80)
-    print("TEACHER NEEDS ANALYSIS RESULTS")
-    print("=" * 80)
-    print(f"\nTeacher ID: {analysis.teacher_id}")
-    print(f"Analysis Time: {analysis.analysis_timestamp}")
-    print(f"Overall Readiness: {analysis.overall_readiness:.2%}")
-    print(f"\nSummary: {analysis.summary}")
-    
-    if analysis.emotional_indicators:
-        print("\nEmotional Indicators:")
-        for emotion, description in analysis.emotional_indicators.items():
-            print(f"  - {emotion}: {description}")
-    
-    if analysis.learning_style_hints:
-        print("\nLearning Style Hints:")
-        for hint in analysis.learning_style_hints:
-            print(f"  - {hint}")
-    
-    print("\n" + "=" * 80)
-    print("TOPIC READINESS SCORES")
-    print("=" * 80)
-    for score in analysis.topic_scores:
-        print(f"\n{score.topic}")
-        print(f"  Score: {score.readiness_score:.2%} (Priority: {score.priority.value})")
-        print(f"  Confidence: {score.confidence:.2%}")
-        if score.identified_gaps:
-            print(f"  Gaps: {', '.join(score.identified_gaps)}")
-        if score.identified_strengths:
-            print(f"  Strengths: {', '.join(score.identified_strengths)}")
-    
-    print("\n" + "=" * 80)
-    print("TRIGGERED CONTENT")
-    print("=" * 80)
-    for content in triggered_content:
-        print(f"\n{content['title']}")
-        print(f"  Type: {content['type']}")
-        print(f"  Priority: {content['triggered_by']['priority']}")
-        print(f"  Readiness Score: {content['triggered_by']['readiness_score']:.2%}")
-    
-    if "recommendations" in dashboard_data:
-        print("\n" + "=" * 80)
-        print("RECOMMENDATIONS")
-        print("=" * 80)
-        recs = dashboard_data["recommendations"]
-        if recs["immediate_actions"]:
-            print("\nImmediate Actions:")
-            for action in recs["immediate_actions"]:
-                print(f"  • {action}")
-    
-    return analysis, dashboard_data, triggered_content
-
 
 class ContentRecommendationEngine:
     """
@@ -742,7 +526,7 @@ class ContentRecommendationEngine:
                     if scored_content:
                         best_content = scored_content[0][1].copy()
                         best_content["match_score"] = scored_content[0][0]
-                        best_content["topic_priority"] = topic_score.priority.value
+                        best_content["topic_priority"] = topic_score.priority
                         best_content["readiness_gap"] = 1.0 - topic_score.readiness_score
                         recommendations.append(best_content)
         
@@ -824,20 +608,3 @@ class ContentRecommendationEngine:
         except:
             return None
         return None
-
-
-class AnalyticsEngine:
-    """
-    Generate analytics and insights across multiple teachers.
-    """
-    
-    @staticmethod
-    def _get_most_common(items: List[str], top_n: int = 5) -> List[tuple]:
-        """Get most common items"""
-        from collections import Counter
-        counter = Counter(items)
-        return counter.most_common(top_n)
-    
-if __name__ == "__main__":
-    # Run example
-    example_usage()

@@ -10,7 +10,7 @@ from fastapi.responses import FileResponse
 
 from scripts.api.chat_system import router as chat_router
 from scripts.api.knowledge_system import router as document_router
-from scripts.api.feature3 import router as needs_analysis_router 
+from scripts.api.teacher_support import router as needs_analysis_router 
 
 load_dotenv()
 

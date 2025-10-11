@@ -1,22 +1,16 @@
 from typing import List, Optional, Dict, Any
 
-from fastapi import APIRouter, HTTPException, Body
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-# --- Import components from your existing code file (needs_engine.py) ---
-from scripts.services.new_feature import (
+from scripts.services.teacher_needs_engine import (
     TeacherNeedsEngine,
     TeacherNeedsAnalysis,
-    PriorityLevel,
     ContentRecommendationEngine,
-    config,
     api_key,
     model,
     logger
 )
-# -------------------------------------------------------------------------
-
-# --- FastAPI Initialization ---
 
 router = APIRouter()
 
@@ -35,18 +29,14 @@ except Exception as e:
     analysis_engine = None 
     recommender_engine = None
 
-
-# --- Input Schemas for API Endpoints ---
-# These mirror the arguments of analyze_teacher_needs
-
 class AnalysisRequest(BaseModel):
-    """Input model for the primary analysis endpoint."""
-    teacher_input: str = Field(..., description="Unstructured text input from the teacher (survey, transcript, notes).")
-    curriculum_topics: List[str] = Field(..., description="List of curriculum topics to assess.")
-    teacher_id: Optional[str] = Field(None, description="Optional identifier for the teacher.")
-    context: Optional[Dict[str, Any]] = Field(None, description="Optional additional context (e.g., years_experience, subject_background).")
-    analysis_depth: str = Field("comprehensive", description="Level of analysis: 'quick', 'standard', or 'comprehensive'.", pattern="^(quick|standard|comprehensive)$")
-    use_cache: bool = Field(True, description="Whether to use cached results for identical inputs.")
+    teacher_input: str
+    curriculum_topics: List[str]
+    teacher_id: Optional[str] = None
+    context: Optional[Dict[str, Any]] = None
+    analysis_depth: str = "comprehensive"
+    use_cache: bool = True
+    content_catalog: Dict[str, List[Dict[str, Any]]]
 
 class ContentCatalogItem(BaseModel):
     """Schema for a single content item in the catalog."""
@@ -116,24 +106,12 @@ async def analyze_teacher_needs_endpoint(request: AnalysisRequest):
     "/api/generate-dashboard",
     summary="Generate Full Dashboard Payload"
 )
-async def generate_dashboard_data_endpoint(
-    request: AnalysisRequest,
-    content_catalog_body: Dict[str, List[Dict[str, Any]]] = Body(
-        ..., 
-        alias="content_catalog", 
-        example=get_example_content_catalog_for_docs(),
-        description="A dictionary mapping topic names to available content resources."
-    )
-):
-    """
-    Performs the LLM analysis and then uses the result with a basic content catalog 
-    (first item per topic) to generate a structured dashboard view.
-    """
+async def generate_dashboard_data_endpoint(request: AnalysisRequest):
     if not analysis_engine:
         raise HTTPException(status_code=503, detail="Analysis engine is not available.")
-
+    
     try:
-        # 1. Perform Analysis (allows for reuse/caching)
+        
         analysis = analysis_engine.analyze_teacher_needs(
             teacher_input=request.teacher_input,
             curriculum_topics=request.curriculum_topics,
@@ -142,24 +120,14 @@ async def generate_dashboard_data_endpoint(
             use_cache=request.use_cache,
             analysis_depth=request.analysis_depth
         )
-        
-        # 2. Get Triggered Content (For this quick trigger, we map to the first content item found)
-        simple_content_map = {k: v[0] for k, v in content_catalog_body.items() if v}
-        triggered_content = analysis_engine.get_triggered_content(
-            analysis=analysis,
-            content_mapping=simple_content_map,
-            threshold=0.7,
-            priority_filter=[PriorityLevel.CRITICAL, PriorityLevel.HIGH]
-        )
-        
-        # 3. Generate Dashboard Data
+
         dashboard_data = analysis_engine.generate_dashboard_data(
             analysis=analysis,
-            triggered_content=triggered_content,
             include_recommendations=True
         )
-        
+
         return dashboard_data
+
     except Exception as e:
         logger.error(f"Dashboard generation failed: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to generate dashboard data: {e}")

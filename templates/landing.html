@@ -636,7 +636,7 @@
                 <span>🎓</span> AI Teacher CoPilot
             </div>
             <div class="nav-links">
-                <a href="#features">Features</a>
+                <a href="teacher_needs">Features</a>
                 <a href="#testimonials">Testimonials</a>
                 <a href="#team">Team</a>
                 <a href="lesson_copilot">Lesson CoPilot</a>
@@ -893,8 +893,8 @@
             });
         }
 
-        function handleKnowledge() {
-            fetch('/api/knowledge-assistant/start', {
+        function handleDashboard() {
+            fetch('/api/generate-dashboard', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -902,7 +902,7 @@
             })
             .then(response => response.json())
             .then(data => {
-                window.location.href = '/knowledge_system';
+                window.location.href = '/feature3';
             })
             .catch(error => {
                 console.error('Error starting page:', error);
