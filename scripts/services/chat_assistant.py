@@ -1207,9 +1207,9 @@ Let's continue our conversation. Could you please rephrase your last response or
 def create_custom_assistant(
     api_key: str,
     cultural_context: CulturalContext = CulturalContext.NIGERIAN,
-    min_questions: int = 5,
-    max_questions: int = 10,
-    min_substantive: int = 7,
+    min_questions: int = 1,
+    max_questions: int = 2,
+    min_substantive: int = 1,
     temperature: float = 0.7
 ) -> ConversationalTeacherAssistant:
     """
