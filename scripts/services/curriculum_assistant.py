@@ -491,34 +491,3 @@ Finally, I'd provide practice problems that gradually increase in difficulty.
         print(f"{'AVERAGE':<30} {avg_knowledge:>6.1f}% {' '*5} {avg_practical:>6.1f}%")
         
         print(f"\n{'='*80}\n")
-
-
-# ============================================================================
-# EXAMPLE USAGE
-# ============================================================================
-
-def main():
-    """Example usage of the Dynamic Teacher Training System"""
-    
-    # Set your Groq API key
-    GROQ_API_KEY = os.getenv("GROQ_API_KEY", "your-groq-api-key-here")
-    
-    if GROQ_API_KEY == "your-groq-api-key-here":
-        print("⚠️  Please set your GROQ_API_KEY environment variable")
-        print("   export GROQ_API_KEY='your-actual-api-key'")
-        return
-    
-    # Initialize training system
-    training_system = DynamicTeacherTraining(GROQ_API_KEY)
-    
-    # Start training for a teacher
-    training_system.start_training(
-        teacher_id="TCH001",
-        class_level="Grade 6",
-        subject="Mathematics",
-        teacher_level="intermediate"
-    )
-
-
-if __name__ == "__main__":
-    main()
