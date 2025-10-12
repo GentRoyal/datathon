@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lesson CoPilot - Teacher Needs Analysis</title>
+    <title>EduBuddy - Teacher Needs Analysis</title>
     <style>
         * {
             margin: 0;
@@ -58,26 +58,50 @@
             color: #6b7280;
         }
 
-        .back-button {
-            display: none;
-            padding: 8px 16px;
-            background: #f3f4f6;
-            color: #374151;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
+        .nav-home {
+    padding: 10px 20px;
+    background: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
 
-        .back-button:hover {
-            background: #e5e7eb;
-        }
+.nav-home:hover {
+    background: #1565c0;
+    transform: translateX(-2px);
+}
 
-        .back-button.active {
-            display: block;
-        }
+    .back-button {
+        display: none;
+        padding: 10px 20px;
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.2s;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .back-button:hover {
+        background: #e5e7eb;
+        transform: translateX(-2px);
+    }
+
+    .back-button.active {
+        display: flex;
+    }
 
         /* Main Layout */
         .main-container {
@@ -600,14 +624,17 @@
 </head>
 <body>
     <div class="header">
-        <div class="header-left">
-            <div class="logo" onclick="showInputView()">Lesson CoPilot</div>
-        </div>
-        <div class="session-info">
-            <button class="back-button" id="backButton" onclick="showInputView()">← Back to Input</button>
-            <span id="headerTitle">Teacher Needs Analysis</span>
-        </div>
+    <div class="header-left">
+        <div class="logo" onclick="showInputView()">Need Assessment</div>
     </div>
+    <div class="session-info">
+        <a href="javascript:history.back()" class="nav-home" title="Go to previous page">
+            ← Back
+        </a>
+        <button class="back-button" id="backButton" onclick="showInputView()">← Back to Input</button>
+        <span id="headerTitle">Teacher Needs Analysis</span>
+    </div>
+</div>
 
     <div class="main-container">
         <!-- Input View -->

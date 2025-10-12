@@ -3,6 +3,47 @@ from typing import List, Dict, Optional
 from enum import Enum
 from dataclasses import dataclass
 
+class TeacherMessageResponse(BaseModel):
+    """Enhanced response including quality metrics"""
+    session_id: str
+    assistant_message: str
+    current_phase: str
+    questions_asked: int
+    is_complete: bool
+    
+    # New quality-aware fields
+    substantive_responses: int = Field(
+        default=0, 
+        description="Number of substantive responses in current phase"
+    )
+    weak_response_count: int = Field(
+        default=0,
+        description="Total number of weak responses across conversation"
+    )
+    last_question_asked: Optional[str] = Field(
+        default=None,
+        description="The last question asked by the assistant"
+    )
+    progress_percentage: Optional[float] = Field(
+        default=None,
+        description="Estimated progress through conversation (0-100)"
+    )
+
+
+class ConversationStateResponse(BaseModel):
+    """Detailed conversation state response"""
+    session_id: str
+    current_phase: str
+    questions_in_phase: int
+    substantive_responses: int
+    weak_response_count: int
+    last_question: Optional[str]
+    extracted_subject: Optional[str]
+    extracted_grade: Optional[str]
+    total_messages: int
+    scenarios_completed: list
+    is_complete: bool
+
 class ChatRequest(BaseModel):
     session_id: str
     message: str
@@ -21,12 +62,12 @@ class TeacherMessageRequest(BaseModel):
     session_id: str
     message: str
     
-class TeacherMessageResponse(BaseModel):
-    session_id: str
-    assistant_message: str
-    current_phase: str
-    questions_asked: int
-    is_complete: bool
+# class TeacherMessageResponse(BaseModel):
+#     session_id: str
+#     assistant_message: str
+#     current_phase: str
+#     questions_asked: int
+#     is_complete: bool
     
     
 class ConversationMessage(BaseModel):

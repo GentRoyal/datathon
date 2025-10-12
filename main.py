@@ -11,6 +11,8 @@ from fastapi.responses import FileResponse
 from scripts.api.chat_system import router as chat_router
 from scripts.api.knowledge_system import router as document_router
 from scripts.api.teacher_support import router as needs_analysis_router 
+from scripts.api.auth import router as auth_router
+from scripts.api.profile import router as profile_router
 
 load_dotenv()
 
@@ -18,7 +20,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
-    title="AI Teacher CoPilot",
+    title="EduBuddy",
     description="An AI-powered Educator Assistant that Analyzes Curricula, Lesson Plans, and Education Policies to Support Smarter Teaching Through Contextual Document Understanding.",
     version="1.0.0"
 )
@@ -32,11 +34,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files directory (for CSS, JS, images if needed)
-static_dir = Path(__file__).parent / "static"
-static_dir.mkdir(exist_ok=True)
-app.mount("/static", StaticFiles(directory=static_dir), name="static")
-
 # Include API routes with /api prefix
 app.include_router(chat_router)
 
@@ -47,31 +44,22 @@ async def read_root():
     landing_page_path = Path(__file__).parent / "templates" / "landing.html"
     if landing_page_path.exists():
         return FileResponse(landing_page_path)
-    return {"message": "Welcome to AI Teacher CoPilot API", "docs": "/docs"}
+    return {"message": "Welcome to EduBuddy API", "docs": "/docs"}
 
 # Serve chat page
-@app.get("/chat_system")
+@app.get("/knowledge-coach")
 async def read_chat():
     """Serve the chat interface"""
-    chat_page_path = Path(__file__).parent / "templates" / "chat.html"
+    chat_page_path = Path(__file__).parent / "templates" / "knowledge-coach.html"
     if chat_page_path.exists():
         return FileResponse(chat_page_path)
     return {"message": "Chat interface not found", "redirect": "/"}
 
-@app.get("/report")
-async def read_report():
-    """Serve the report interface"""
-    report_page_path = Path(__file__).parent / "templates" / "report.html"
-    if report_page_path.exists():
-        return FileResponse(report_page_path)
-    return {"message": "Report interface not found", "redirect": "/"}
-
-
 app.include_router(document_router)
-@app.get("/lesson_copilot")
+@app.get("/lesson-copilot")
 async def upload_document():
     """Serve the report interface"""
-    report_page_path = Path(__file__).parent / "templates" / "knowledge_compressor.html"
+    report_page_path = Path(__file__).parent / "templates" / "lesson-copilot.html"
     
     if report_page_path.exists():
         return FileResponse(report_page_path)
@@ -79,21 +67,42 @@ async def upload_document():
 
 
 app.include_router(needs_analysis_router)
-@app.get("/teacher_needs")
+@app.get("/need-assessment")
 async def teacher_needs():
     """Serve the report interface"""
-    report_page_path = Path(__file__).parent / "templates" / "dashboard.html"
+    report_page_path = Path(__file__).parent / "templates" / "need-assessment.html"
     
     if report_page_path.exists():
         return FileResponse(report_page_path)
     return {"message": "Need Analysis Interface Not Found", "redirect": "/"}
 
-# Health check endpoint
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy", "version": "1.0.0"}
+app.include_router(auth_router)
+@app.get("/api/login")
+async def login():
+    """Serve the report interface"""
+    report_page_path = Path(__file__).parent / "templates" / "login.html"
+    
+    if report_page_path.exists():
+        return FileResponse(report_page_path)
+    return {"message": "Login Interface Not Found", "redirect": "/"}
 
+@app.get("/api/signup")
+async def signup():
+    """Serve the report interface"""
+    report_page_path = Path(__file__).parent / "templates" / "login.html"
+    
+    if report_page_path.exists():
+        return FileResponse(report_page_path)
+    return {"message": "Login Interface Not Found", "redirect": "/"}
+
+app.include_router(profile_router)
+@app.get("/api/teacher-profile")
+async def read_profile():
+    """Serve the teacher profile page"""
+    profile_page_path = Path(__file__).parent / "templates" / "teacher-profile.html"
+    if profile_page_path.exists():
+        return FileResponse(profile_page_path)
+    return {"message": "Profile page not found"}
 
 
 if __name__ == "__main__":

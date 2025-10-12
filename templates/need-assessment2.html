@@ -58,6 +58,37 @@
             margin-bottom: 40px;
         }
 
+        .info-banner {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: start;
+            gap: 12px;
+        }
+
+        .info-banner-icon {
+            background: #3b82f6;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .info-banner-text {
+            font-size: 14px;
+            color: #1e40af;
+            line-height: 1.5;
+        }
+
         .form-group {
             margin-bottom: 24px;
         }
@@ -289,6 +320,14 @@
         <div class="logo">Lesson CoPilot</div>
         <div class="subtitle">Tell us about your teaching needs and we'll create a personalized development plan</div>
 
+        <div id="infoBanner" class="info-banner" style="display: none;">
+            <div class="info-banner-icon">✓</div>
+            <div class="info-banner-text">
+                <strong>Report Summary Loaded!</strong><br>
+                The text below has been pre-filled with a summary from your assessment. Feel free to edit it or add more details.
+            </div>
+        </div>
+
         <form id="analysisForm">
             <div class="form-group">
                 <label for="teacherInput">
@@ -362,10 +401,11 @@
     <script>
         const ANALYSIS_ENDPOINT = '/api/v1/needs/generate-dashboard';
 
-        // Character counter
         const teacherInput = document.getElementById('teacherInput');
         const charCount = document.getElementById('charCount');
+        const infoBanner = document.getElementById('infoBanner');
         
+        // Character counter
         teacherInput.addEventListener('input', (e) => {
             charCount.textContent = e.target.value.length;
         });
@@ -431,7 +471,7 @@
             if (yearsExp) requestData.context.years_experience = parseInt(yearsExp);
             if (subject) requestData.context.subject_background = subject;
 
-            // Mock content catalog (in production, this would come from your backend)
+            // Mock content catalog
             const mockContentCatalog = {
                 "Artificial Intelligence Fundamentals": [
                     { "content_id": "AI_101_video", "title": "AI: Visual Intro (Video)", "type": "video_series", "url": "/content/ai-fundamentals-v", "metadata": {"duration": "1 hour", "difficulty": "beginner", "format": "video"} },
@@ -467,7 +507,11 @@
                 
                 // Store results and navigate to dashboard
                 sessionStorage.setItem('dashboardData', JSON.stringify(dashboardData));
-                window.location.href = 'dashboard.html'; // Update with your actual dashboard page URL
+                
+                // Clean up the report summary after successful submission
+                sessionStorage.removeItem('reportSummary');
+                
+                window.location.href = 'dashboard.html';
                 
             } catch (error) {
                 console.error('Analysis failed:', error);

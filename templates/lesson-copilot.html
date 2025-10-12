@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lesson CoPilot - Chat</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-docx-js/0.3.1/html-docx.js"></script>
     <style>
         * {
             margin: 0;
@@ -72,6 +74,27 @@
             background: #f9fafb;
             border-color: #d1d5db;
         }
+
+        .nav-home {
+    padding: 10px 20px;
+    background: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.nav-home:hover {
+    background: #1565c0;
+    transform: translateX(-2px);
+}
 
         /* Main Layout */
         .main-container {
@@ -348,6 +371,7 @@
             gap: 12px;
             animation: slideIn 0.3s ease;
             max-width: 80%;
+            position: relative;
         }
 
         @keyframes slideIn {
@@ -392,6 +416,10 @@
             color: white;
         }
 
+        .message-content-wrapper {
+            flex: 1;
+        }
+
         .message-content {
             padding: 12px 16px;
             border-radius: 12px;
@@ -411,10 +439,132 @@
             border-bottom-right-radius: 4px;
         }
 
+        .message-footer {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
         .message-time {
             font-size: 11px;
             color: #9ca3af;
-            margin-top: 4px;
+        }
+
+        .download-menu {
+            position: relative;
+            display: inline-block;
+        }
+
+        .download-btn {
+            background: transparent;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .download-btn:hover {
+            background: #e5e7eb;
+            color: #1976d2;
+        }
+
+        .download-dropdown {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 4px;
+            z-index: 100;
+            min-width: 120px;
+        }
+
+        .download-dropdown.show {
+            display: block;
+        }
+
+        .download-option {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #374151;
+            transition: all 0.2s;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .download-option:last-child {
+            border-bottom: none;
+        }
+
+        .download-option:hover {
+            background: #f9fafb;
+            color: #1976d2;
+        }
+
+        .tts-btn {
+            background: transparent;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .tts-btn:hover {
+            background: #e5e7eb;
+            color: #1976d2;
+        }
+
+        .tts-btn.speaking {
+            color: #1976d2;
+            background: #eff6ff;
+        }
+
+        .voice-input-btn {
+            background: white;
+            border: 1px solid #d1d5db;
+            color: #374151;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.2s;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .voice-input-btn:hover:not(.listening) {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+
+        .voice-input-btn.listening {
+            background: #fee2e2;
+            border-color: #dc2626;
+            color: #dc2626;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
 
         .input-area {
@@ -580,14 +730,17 @@
 </head>
 <body>
     <div class="header">
-        <div class="header-left">
-            <a href="/" class="logo">Lesson CoPilot</a>
-        </div>
-        <div class="session-info">
-            <span id="sessionTime">Session: 0:00</span>
-            <button class="new-session-btn" onclick="startNewSession()">New Session</button>
-        </div>
+    <div class="header-left">
+        <a href="/" class="logo">Lesson CoPilot</a>
     </div>
+    <div class="session-info">
+        <a href="javascript:history.back()" class="nav-home" title="Go to previous page">
+            ← Back
+        </a>
+        <span id="sessionTime">Session: 0:00</span>
+        <button class="new-session-btn" onclick="startNewSession()">New Session</button>
+    </div>
+</div>
 
     <div class="main-container">
         <aside class="sidebar" id="sidebar" style="display: none;">
@@ -638,6 +791,9 @@
 
             <div class="input-area">
                 <div class="input-wrapper">
+                    <button class="voice-input-btn" id="voiceInputBtn" title="Voice Input">
+                        🎤
+                    </button>
                     <textarea 
                         id="messageInput" 
                         placeholder="Ask a question about your document..."
@@ -658,10 +814,221 @@
         const sendButton = document.getElementById('sendButton');
         const statusBadge = document.getElementById('statusBadge');
         const sidebar = document.getElementById('sidebar');
+        const voiceInputBtn = document.getElementById('voiceInputBtn');
         
         let messageCount = 0;
         let questionCount = 0;
         let sessionStartTime = Date.now();
+        
+        // Speech Recognition (STT)
+        let recognition = null;
+        let isListening = false;
+        let recognitionTimeout = null;
+        let finalTranscript = '';
+        let shouldSendAfterStop = false;
+        
+        // Speech Synthesis (TTS)
+        let currentUtterance = null;
+        let isSpeaking = false;
+
+        // Initialize Speech Recognition
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = true; // Keep listening continuously
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+            recognition.maxAlternatives = 1;
+
+            recognition.onstart = function() {
+                isListening = true;
+                finalTranscript = '';
+                shouldSendAfterStop = false;
+                voiceInputBtn.classList.add('listening');
+                voiceInputBtn.innerHTML = '⏹️';
+                voiceInputBtn.title = 'Stop recording and send';
+                messageInput.placeholder = 'Listening... Speak now';
+            };
+
+            recognition.onresult = function(event) {
+                let interimTranscript = '';
+                
+                // Rebuild the entire final transcript from scratch
+                finalTranscript = '';
+                for (let i = 0; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript + ' ';
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                // Update the input with both final and interim results
+                const fullText = (finalTranscript + interimTranscript).trim();
+                messageInput.value = fullText;
+                messageInput.style.height = 'auto';
+                messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
+
+                // Clear any existing timeout
+                if (recognitionTimeout) {
+                    clearTimeout(recognitionTimeout);
+                }
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                
+                // Don't stop for 'no-speech' error if we're still listening
+                if (event.error === 'no-speech' && isListening) {
+                    return;
+                }
+                
+                if (event.error === 'not-allowed') {
+                    showError('Microphone access denied. Please enable microphone permissions.');
+                    stopListening();
+                } else if (event.error === 'aborted') {
+                    // Aborted is normal when we manually stop
+                    return;
+                }
+            };
+
+            recognition.onend = function() {
+                if (recognitionTimeout) {
+                    clearTimeout(recognitionTimeout);
+                }
+                
+                // If user manually stopped, send the message
+                if (shouldSendAfterStop) {
+                    shouldSendAfterStop = false;
+                    stopListening();
+                    
+                    // Wait a bit to ensure all text is captured
+                    setTimeout(() => {
+                        if (messageInput.value.trim()) {
+                            sendMessage();
+                        }
+                    }, 300);
+                } else if (isListening) {
+                    // If still supposed to be listening, restart
+                    try {
+                        recognition.start();
+                    } catch (error) {
+                        console.error('Error restarting recognition:', error);
+                        stopListening();
+                    }
+                }
+            };
+        }
+
+        function toggleVoiceInput() {
+            if (!recognition) {
+                showError('Speech recognition is not supported in your browser.');
+                return;
+            }
+
+            if (isListening) {
+                // Mark that we should send after stopping
+                shouldSendAfterStop = true;
+                isListening = false;
+                
+                // Stop recognition
+                try {
+                    recognition.stop();
+                } catch (error) {
+                    console.error('Error stopping recognition:', error);
+                    stopListening();
+                    if (messageInput.value.trim()) {
+                        sendMessage();
+                    }
+                }
+            } else {
+                // Clear previous input and start listening
+                messageInput.value = '';
+                finalTranscript = '';
+                shouldSendAfterStop = false;
+                try {
+                    recognition.start();
+                } catch (error) {
+                    console.error('Error starting recognition:', error);
+                    showError('Failed to start voice input. Please try again.');
+                }
+            }
+        }
+
+        function stopListening() {
+            isListening = false;
+            shouldSendAfterStop = false;
+            if (recognitionTimeout) {
+                clearTimeout(recognitionTimeout);
+                recognitionTimeout = null;
+            }
+            voiceInputBtn.classList.remove('listening');
+            voiceInputBtn.innerHTML = '🎤';
+            voiceInputBtn.title = 'Voice Input';
+            messageInput.placeholder = 'Ask a question about your document...';
+        }
+
+        // Text-to-Speech function
+        function speakText(text, button) {
+            if (!('speechSynthesis' in window)) {
+                showError('Text-to-speech is not supported in your browser.');
+                return;
+            }
+
+            // If already speaking this text, stop it
+            if (isSpeaking && currentUtterance && button.classList.contains('speaking')) {
+                window.speechSynthesis.cancel();
+                button.classList.remove('speaking');
+                button.innerHTML = '🔊';
+                button.title = 'Read aloud';
+                isSpeaking = false;
+                currentUtterance = null;
+                return;
+            }
+
+            // Stop any ongoing speech
+            window.speechSynthesis.cancel();
+            
+            // Remove speaking class from all buttons
+            document.querySelectorAll('.tts-btn').forEach(btn => {
+                btn.classList.remove('speaking');
+                btn.innerHTML = '🔊';
+                btn.title = 'Read aloud';
+            });
+
+            // Create new utterance
+            currentUtterance = new SpeechSynthesisUtterance(text);
+            currentUtterance.rate = 0.9;
+            currentUtterance.pitch = 1;
+            currentUtterance.volume = 1;
+
+            currentUtterance.onstart = function() {
+                isSpeaking = true;
+                button.classList.add('speaking');
+                button.innerHTML = '⏸️';
+                button.title = 'Stop reading';
+            };
+
+            currentUtterance.onend = function() {
+                isSpeaking = false;
+                button.classList.remove('speaking');
+                button.innerHTML = '🔊';
+                button.title = 'Read aloud';
+                currentUtterance = null;
+            };
+
+            currentUtterance.onerror = function(event) {
+                console.error('Speech synthesis error:', event);
+                isSpeaking = false;
+                button.classList.remove('speaking');
+                button.innerHTML = '🔊';
+                button.title = 'Read aloud';
+                currentUtterance = null;
+            };
+
+            window.speechSynthesis.speak(currentUtterance);
+        }
 
         // Auto-resize textarea
         messageInput.addEventListener('input', function() {
@@ -677,6 +1044,15 @@
             document.getElementById('sessionTime').textContent = 
                 `Session: ${minutes}:${seconds.toString().padStart(2, '0')}`;
         }, 1000);
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.download-menu')) {
+                document.querySelectorAll('.download-dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('show');
+                });
+            }
+        });
 
         // Initialize with upload form
         renderUploadForm();
@@ -796,7 +1172,6 @@
                 const formData = new FormData();
                 formData.append('file', uploadedDocument);
 
-
                 // Simulate API call to upload document and start session
                 const response = await fetch('/api/ingest/document', {
                     method: 'POST',
@@ -836,7 +1211,6 @@
             // Activate chat
             chatArea.classList.add('active');
             
-            
             messageInput.focus();
         }
 
@@ -856,7 +1230,6 @@
             showLoading();
 
             try {
-                // Replace with your actual API endpoint
                 const response = await fetch('/api/document/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -894,13 +1267,38 @@
                 minute: '2-digit' 
             });
             
+            const downloadHTML = role === 'assistant' ? `
+                <div class="download-menu">
+                    <button class="download-btn" onclick="toggleDownload(this)">
+                        <span>⬇️</span>
+                        <span>Download</span>
+                    </button>
+                    <div class="download-dropdown">
+                        <div class="download-option" onclick="downloadAsPDF(this)">📄 Download as PDF</div>
+                        <div class="download-option" onclick="downloadAsDOCX(this)">📝 Download as DOCX</div>
+                    </div>
+                </div>
+                <button class="tts-btn" onclick="speakText(this.getAttribute('data-text'), this)" data-text="${escapeHtml(content)}" title="Read aloud">
+                    🔊
+                </button>
+            ` : '';
+            
             messageDiv.innerHTML = `
                 <div class="avatar">${avatarText}</div>
-                <div>
+                <div class="message-content-wrapper">
                     <div class="message-content">${formatMessage(content)}</div>
-                    <div class="message-time">${time}</div>
+                    <div class="message-footer">
+                        <div class="message-time">${time}</div>
+                        ${downloadHTML}
+                    </div>
                 </div>
             `;
+            
+            // Store raw content as a property on the element instead of attribute
+            if (role === 'assistant') {
+                const contentDiv = messageDiv.querySelector('.message-content');
+                contentDiv._rawContent = content;
+            }
             
             messagesContainer.appendChild(messageDiv);
             if (scroll) scrollToBottom();
@@ -909,8 +1307,182 @@
             updateStats();
         }
 
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function toggleDownload(btn) {
+            event.stopPropagation();
+            const dropdown = btn.nextElementSibling;
+            const allDropdowns = document.querySelectorAll('.download-dropdown');
+            
+            allDropdowns.forEach(d => {
+                if (d !== dropdown) d.classList.remove('show');
+            });
+            
+            dropdown.classList.toggle('show');
+        }
+
+        function downloadAsPDF(element) {
+            event.stopPropagation();
+            const messageContent = element.closest('.message').querySelector('.message-content');
+            const rawContent = messageContent._rawContent || messageContent.textContent;
+            const timestamp = new Date().toLocaleString();
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                const pageHeight = doc.internal.pageSize.height;
+                const pageWidth = doc.internal.pageSize.width;
+                const margin = 20;
+                const maxWidth = pageWidth - (margin * 2);
+                let yPosition = 20;
+                
+                // Add title
+                doc.setFontSize(16);
+                doc.setFont(undefined, 'bold');
+                doc.text('Lesson CoPilot - AI Response', margin, yPosition);
+                yPosition += 10;
+                
+                // Add timestamp
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'normal');
+                doc.setTextColor(128, 128, 128);
+                doc.text(`Generated: ${timestamp}`, margin, yPosition);
+                yPosition += 15;
+                
+                // Add content with page breaks
+                doc.setFontSize(11);
+                doc.setTextColor(0, 0, 0);
+                
+                // Split content into lines
+                const lines = doc.splitTextToSize(rawContent, maxWidth);
+                
+                // Add lines with page break handling
+                for (let i = 0; i < lines.length; i++) {
+                    // Check if we need a new page
+                    if (yPosition > pageHeight - 20) {
+                        doc.addPage();
+                        yPosition = 20;
+                    }
+                    
+                    doc.text(lines[i], margin, yPosition);
+                    yPosition += 6; // Line height
+                }
+                
+                // Save PDF
+                doc.save(`lesson-copilot-response-${Date.now()}.pdf`);
+                
+                // Close dropdown
+                element.closest('.download-dropdown').classList.remove('show');
+                
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('Failed to generate PDF. Please try again.');
+            }
+        }
+
+        function downloadAsDOCX(element) {
+            event.stopPropagation();
+            const messageContent = element.closest('.message').querySelector('.message-content');
+            const rawContent = messageContent._rawContent || messageContent.textContent;
+            const timestamp = new Date().toLocaleString();
+            
+            try {
+                // Format content with proper line breaks and escape HTML
+                const formattedContent = rawContent
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;')
+                    .split('\n')
+                    .map(line => `<p style="margin: 0; margin-bottom: 8pt;">${line || '&nbsp;'}</p>`)
+                    .join('');
+                
+                // Create HTML content for DOCX with better styling
+                const htmlContent = `<!DOCTYPE html>
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+    <meta charset="UTF-8">
+    <xml>
+        <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>100</w:Zoom>
+        </w:WordDocument>
+    </xml>
+    <style>
+        @page {
+            size: 8.5in 11in;
+            margin: 1in;
+        }
+        body { 
+            font-family: Calibri, Arial, sans-serif; 
+            font-size: 11pt;
+            line-height: 1.6;
+        }
+        h1 { 
+            color: #1976d2; 
+            font-size: 18pt; 
+            margin-bottom: 10pt;
+            border-bottom: 2pt solid #1976d2;
+            padding-bottom: 5pt;
+        }
+        .timestamp { 
+            color: #666; 
+            font-size: 9pt; 
+            margin-bottom: 20pt; 
+            font-style: italic;
+        }
+        .content { 
+            font-size: 11pt; 
+            line-height: 1.6;
+        }
+        p {
+            margin: 0;
+            margin-bottom: 8pt;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lesson CoPilot - AI Response</h1>
+    <div class="timestamp">Generated: ${timestamp}</div>
+    <div class="content">${formattedContent}</div>
+</body>
+</html>`;
+                
+                // Convert to blob with proper Word headers
+                const blob = new Blob(['\ufeff', htmlContent], {
+                    type: 'application/msword'
+                });
+                
+                // Create download link
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `lesson-copilot-response-${Date.now()}.doc`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                // Close dropdown
+                element.closest('.download-dropdown').classList.remove('show');
+                
+            } catch (error) {
+                console.error('Error generating DOCX:', error);
+                alert('Failed to generate document. Please try again.');
+            }
+        }
+
         function formatMessage(text) {
             return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
                 .replace(/\n/g, '<br>')
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                 .replace(/\*(.*?)\*/g, '<em>$1</em>');
@@ -922,10 +1494,12 @@
             loadingDiv.id = 'loadingMessage';
             loadingDiv.innerHTML = `
                 <div class="avatar">AI</div>
-                <div class="message-content loading-indicator">
-                    <div class="loading-dot"></div>
-                    <div class="loading-dot"></div>
-                    <div class="loading-dot"></div>
+                <div class="message-content-wrapper">
+                    <div class="message-content loading-indicator">
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                    </div>
                 </div>
             `;
             messagesContainer.appendChild(loadingDiv);
@@ -987,6 +1561,8 @@
         // Event listeners
         sendButton.addEventListener('click', sendMessage);
         
+        voiceInputBtn.addEventListener('click', toggleVoiceInput);
+        
         messageInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -994,8 +1570,12 @@
             }
         });
 
-        // Make removeSelectedFile globally accessible
+        // Make functions globally accessible
         window.removeSelectedFile = removeSelectedFile;
+        window.toggleDownload = toggleDownload;
+        window.downloadAsPDF = downloadAsPDF;
+        window.downloadAsDOCX = downloadAsDOCX;
+        window.speakText = speakText;
     </script>
 </body>
 </html>

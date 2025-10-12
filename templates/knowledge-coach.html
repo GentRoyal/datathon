@@ -73,6 +73,27 @@
             border-color: #d1d5db;
         }
 
+        .nav-home {
+            padding: 10px 20px;
+            background: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-home:hover {
+            background: #1565c0;
+            transform: translateX(-2px);
+        }
+
         /* Main Layout */
         .main-container {
             flex: 1;
@@ -295,9 +316,7 @@
             gap: 16px;
         }
         
-        /* ------------------------------------------- */
-        /* NEW STYLES FOR SELECTION FORM */
-        /* ------------------------------------------- */
+        /* Pre-chat form styles */
         .pre-chat-form {
             display: flex;
             flex-direction: column;
@@ -343,7 +362,7 @@
             border-radius: 8px;
             font-size: 15px;
             outline: none;
-            appearance: none; /* Remove default arrow */
+            appearance: none;
             background: white url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236B7280'%3e%3cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3e%3c/svg%3e") no-repeat right 12px center;
             background-size: 1.5em;
         }
@@ -371,8 +390,6 @@
             background: #90caf9;
             cursor: not-allowed;
         }
-        /* ------------------------------------------- */
-
 
         .message {
             display: flex;
@@ -452,16 +469,13 @@
             padding: 16px 24px;
             border-top: 1px solid #e5e7eb;
             background: white;
-            /* Hide the input area initially */
             display: none; 
         }
 
-        /* Show input area when active */
         .chat-area.active .input-area {
             display: block;
         }
         
-        /* Hide messages container content when form is showing */
         .chat-area:not(.active) .messages {
             padding: 0;
         }
@@ -618,36 +632,23 @@
         }
 
         /* Custom Scrollbar */
-        .messages::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .messages::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        .messages::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
-        }
-
-        .messages::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-
+        .messages::-webkit-scrollbar,
         .sidebar::-webkit-scrollbar {
             width: 6px;
         }
 
+        .messages::-webkit-scrollbar-track,
         .sidebar::-webkit-scrollbar-track {
             background: #f1f1f1;
         }
 
+        .messages::-webkit-scrollbar-thumb,
         .sidebar::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 3px;
         }
 
+        .messages::-webkit-scrollbar-thumb:hover,
         .sidebar::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
@@ -655,21 +656,22 @@
 </head>
 <body>
     <div class="header">
-        <div class="header-left">
-            <a href="http://127.0.0.1:8000/" class="logo">Knowledge Coach</a>
-        </div>
-        <div class="session-info">
-            <span id="sessionTime">Session: 0:00</span>
-            <button class="new-session-btn" onclick="startNewSession()">New Session</button>
-        </div>
+    <div class="header-left">
+        <a class="logo">Knowledge Coach</a>
     </div>
+    <div class="session-info">
+        <a href="javascript:history.back()" class="nav-home" title="Go to previous page">
+            ← Back
+        </a>
+        <span id="sessionTime">Session: 0:00</span>
+        <button class="new-session-btn" onclick="startNewSession()">New Session</button>
+    </div>
+</div>
 
     <div class="main-container">
         <aside class="sidebar">
             <div class="kpi-card">
-                <div class="kpi-header">
-                    Overall Progress
-                </div>
+                <div class="kpi-header">Overall Progress</div>
                 <div class="progress-circle">
                     <svg class="progress-ring" width="120" height="120">
                         <circle class="progress-ring-circle" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/>
@@ -683,9 +685,7 @@
             </div>
 
             <div class="kpi-card">
-                <div class="kpi-header">
-                    Learning Journey
-                </div>
+                <div class="kpi-header">Learning Journey</div>
                 <div class="phase-list" id="phaseList">
                     <div class="phase-item active" data-phase="INITIAL_ASSESSMENT">
                         <div class="phase-icon">1</div>
@@ -733,9 +733,7 @@
             </div>
 
             <div class="kpi-card">
-                <div class="kpi-header">
-                    Session Stats
-                </div>
+                <div class="kpi-header">Session Stats</div>
                 <div class="stats-grid">
                     <div class="stat-box">
                         <div class="stat-value" id="messageCount">0</div>
@@ -757,8 +755,7 @@
                 </div>
             </div>
 
-            <div class="messages" id="messagesContainer">
-                </div>
+            <div class="messages" id="messagesContainer"></div>
 
             <div class="input-area">
                 <div class="input-wrapper">
@@ -798,7 +795,6 @@
             'FINAL_ASSESSMENT': 'Final Assessment'
         };
 
-        // Nigerian Curriculum Data (based on previous logic/standard)
         const CURRICULUM_DATA = {
             'Primary 1': ["English Studies", "Mathematics", "Basic Science & Technology", "Cultural & Creative Arts", "Christian Religious Studies", "Islamic Studies", "Physical & Health Education"],
             'Primary 2': ["English Studies", "Mathematics", "Basic Science & Technology", "Cultural & Creative Arts", "Christian Religious Studies", "Islamic Studies", "Physical & Health Education"],
@@ -816,14 +812,11 @@
         
         const ALL_CLASSES = Object.keys(CURRICULUM_DATA);
 
-
-        // Auto-resize textarea
         messageInput.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = Math.min(this.scrollHeight, 120) + 'px';
         });
 
-        // Session timer
         setInterval(() => {
             const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
             const minutes = Math.floor(elapsed / 60);
@@ -832,7 +825,6 @@
                 `Session: ${minutes}:${seconds.toString().padStart(2, '0')}`;
         }, 1000);
 
-        // Initialize
         if (!sessionId) {
             renderSelectionForm();
         } else {
@@ -841,10 +833,6 @@
         
         updateProgress(0, 6);
         
-        // -------------------------------------------------------------
-        // NEW FRONT-END LOGIC FOR SELECTION FORM
-        // -------------------------------------------------------------
-
         function renderSelectionForm() {
             messagesContainer.innerHTML = `
                 <div class="pre-chat-form">
@@ -870,7 +858,6 @@
                 </div>
             `;
             
-            // Set chat area to non-active state (hides input bar)
             chatArea.classList.remove('active');
 
             const classSelect = document.getElementById('classSelect');
@@ -891,13 +878,11 @@
                 const subjects = CURRICULUM_DATA[selectedClass];
                 subjectSelect.disabled = false;
                 
-                // Add default option
                 const defaultOption = document.createElement('option');
                 defaultOption.value = "";
                 defaultOption.textContent = `-- Choose a Subject for ${selectedClass} --`;
                 subjectSelect.appendChild(defaultOption);
 
-                // Add available subjects
                 subjects.forEach(subject => {
                     const option = document.createElement('option');
                     option.value = subject;
@@ -932,20 +917,14 @@
                 return;
             }
 
-            // Disable button and show loading state
             startChatButton.disabled = true;
             startChatButton.textContent = "Starting Session...";
 
             await startNewConversation(selectedClass, selectedSubject);
         }
-
-        // -------------------------------------------------------------
-        // MODIFIED CORE FUNCTIONS
-        // -------------------------------------------------------------
         
         async function startNewConversation(grade, subject) {
             try {
-                // Clear any pre-chat content
                 messagesContainer.innerHTML = ''; 
                 showLoading();
                 
@@ -966,7 +945,6 @@
                 sessionId = data.session_id;
                 sessionStorage.setItem('session_id', sessionId);
                 
-                // Enable chat input and activate chat area
                 chatArea.classList.add('active'); 
 
                 addMessage('assistant', data.message);
@@ -977,7 +955,7 @@
                 console.error('Error:', error);
                 removeLoading();
                 showError('Failed to start conversation. Please try again.');
-                renderSelectionForm(); // Revert to form if starting fails
+                renderSelectionForm();
             }
         }
 
@@ -986,14 +964,12 @@
                 const response = await fetch(`/api/teacher-assistant/history/${sessionId}`);
                 
                 if (!response.ok) {
-                    // If history fails to load, start a new one (which goes to the selection form)
                     renderSelectionForm(); 
                     return;
                 }
                 
                 const data = await response.json();
                 
-                // If history is loaded, activate chat area
                 chatArea.classList.add('active'); 
                 messagesContainer.innerHTML = '';
                 
@@ -1004,10 +980,6 @@
                 updatePhase(data.current_phase);
                 isAssessmentComplete = data.is_complete || false;
                 
-                if (isAssessmentComplete) {
-                    showCompletionBanner();
-                }
-                
                 updateKPIs();
                 
             } catch (error) {
@@ -1016,16 +988,6 @@
                 renderSelectionForm();
             }
         }
-        
-        // ... (The rest of your existing functions: sendMessage, addMessage, formatMessage, 
-        // showLoading, removeLoading, updatePhase, updateProgress, initializeProgressCircle, 
-        // updateKPIs, showCompletionBanner, viewReport, showError, scrollToBottom, 
-        // startNewSession, and Event listeners remain the same.)
-        
-        // -------------------------------------------------------------
-        // ... REST OF THE JAVASCRIPT FUNCTIONS ... 
-        // (Ensure these are present below the modifications above)
-        // -------------------------------------------------------------
         
         async function sendMessage() {
             const message = messageInput.value.trim();
@@ -1064,7 +1026,6 @@
 
                 if (data.is_complete && !isAssessmentComplete) {
                     isAssessmentComplete = true;
-                    showCompletionBanner();
                 }
 
             } catch (error) {
@@ -1148,10 +1109,9 @@
             
             let currentIndex = phaseOrder.indexOf(normalizedPhase);
             
-            // Adjust for specific roleplay sub-phases
             if (normalizedPhase === 'STUDENT_ROLEPLAY' || normalizedPhase === 'PARENT_ROLEPLAY' || 
                 normalizedPhase === 'ADMINISTRATOR_ROLEPLAY' || normalizedPhase === 'READINESS_CHECK') {
-                currentIndex = 4; // Map all sub-phases to the main 'ROLEPLAY' index
+                currentIndex = 4;
             }
             
             if (currentIndex === -1) {
@@ -1162,7 +1122,6 @@
                 const statusEl = item.querySelector('.phase-status');
                 item.classList.remove('active', 'completed');
                 
-                // Skip the special case for the unlisted READINESS_CHECK sub-phase in the visual list.
                 const visualPhaseIndex = index;
 
                 if (visualPhaseIndex < currentIndex) {
@@ -1210,21 +1169,6 @@
             document.getElementById('questionsAnswered').textContent = questionsAnswered;
         }
 
-        function showCompletionBanner() {
-            const banner = document.createElement('div');
-            banner.className = 'completion-banner';
-            banner.innerHTML = `
-                <h3>Assessment Complete!</h3>
-                <p>Your comprehensive readiness report is ready to view.</p>
-                <button class="view-report-btn" onclick="viewReport()">View Detailed Report</button>
-            `;
-            messagesContainer.appendChild(banner);
-            scrollToBottom();
-        }
-
-        function viewReport() {
-            window.location.href = `/report?session_id=${sessionId}`;
-        }
 
         function showError(message) {
             const errorDiv = document.createElement('div');
@@ -1234,6 +1178,7 @@
             scrollToBottom();
             
             setTimeout(() => errorDiv.remove(), 5000);
+            return errorDiv;
         }
 
         function scrollToBottom() {
@@ -1247,7 +1192,6 @@
             }
         }
 
-        // Event listeners
         sendButton.addEventListener('click', sendMessage);
         
         messageInput.addEventListener('keypress', (e) => {
