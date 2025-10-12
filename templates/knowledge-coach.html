@@ -1043,7 +1043,7 @@
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${role}`;
             
-            const avatarText = role === 'assistant' ? 'AI' : 'You';
+            const avatarText = role === 'assistant' ? 'Bot' : 'You';
             const time = new Date().toLocaleTimeString('en-US', { 
                 hour: '2-digit', 
                 minute: '2-digit' 
@@ -1076,7 +1076,7 @@
             loadingDiv.className = 'message assistant';
             loadingDiv.id = 'loadingMessage';
             loadingDiv.innerHTML = `
-                <div class="avatar">AI</div>
+                <div class="avatar">Bot</div>
                 <div class="message-content loading-indicator">
                     <div class="loading-dot"></div>
                     <div class="loading-dot"></div>
