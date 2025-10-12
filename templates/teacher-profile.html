@@ -404,6 +404,9 @@
             </a>
             <div class="nav-right">
                 <a href="#" class="nav-link">Dashboard</a>
+                <a href="/lesson-copilot" class="nav-link">Create Lesson Plan</a>
+                <a href="/knowledge-coach" class="nav-link">Answer Questions</a>
+                <a href="/need-assessment" class="nav-link">Needs Analysis</a>
                 <a href="#" class="nav-link">Help</a>
                 <button class="logout-btn" onclick="handleLogout()">Logout</button>
             </div>
@@ -415,8 +418,7 @@
         <!-- Profile Header -->
         <div class="profile-header">
             <div class="profile-avatar">
-                                <img id="profileImage" src="https://media.licdn.com/dms/image/v2/D4D03AQGF7AZJgSy2Mg/profile-displayphoto-crop_800_800/B4DZlbSn_EGwAM-/0/1758173236233?e=1762992000&v=beta&t=cXGF_rt1emdZvFk33N7-DryS_Bj7h-gYvmB1F0AmgM8" alt="Teacher Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
-
+                <img id="profileImage" src="https://media.licdn.com/dms/image/v2/D4D03AQGF7AZJgSy2Mg/profile-displayphoto-crop_800_800/B4DZlbSn_EGwAM-/0/1758173236233?e=1762992000&v=beta&t=cXGF_rt1emdZvFk33N7-DryS_Bj7h-gYvmB1F0AmgM8" alt="Teacher Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
             </div>
             <div class="profile-info">
                 <h1 id="teacherName">Ridwan Yusuf</h1>
@@ -455,13 +457,63 @@
 
         <!-- Tabs -->
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('profile')">Profile</button>
-            <button class="tab" onclick="switchTab('tools')">My Tools</button>
+            <button class="tab active" onclick="switchTab('tools')">My Tools</button>
+            <button class="tab" onclick="switchTab('profile')">Profile</button>
             <button class="tab" onclick="switchTab('settings')">Settings</button>
         </div>
 
+        <!-- Tools Tab -->
+        <div id="tools" class="tab-content active">
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <div class="tool-icon">📚</div>
+                    <h3>Lesson CoPilot</h3>
+                    <p>Generate comprehensive lesson plans with AI assistance. Customize for any subject and grade level.</p>
+                    <button class="btn-primary">Launch Tool</button>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">🤖</div>
+                    <h3>Knowledge Coach</h3>
+                    <p>Get instant answers to teaching questions and personalized suggestions for your classroom needs.</p>
+                    <button class="btn-primary">Launch Tool</button>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">📊</div>
+                    <h3>Teacher Needs Analysis</h3>
+                    <p>Analyze your curriculum and identify gaps. Get actionable insights to improve student outcomes.</p>
+                    <button class="btn-primary">Launch Tool</button>
+                </div>
+            </div>
+
+            <div class="content-grid full" style="margin-top: 32px;">
+                <div class="card">
+                    <h2>Tool Usage Statistics</h2>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-number">127</div>
+                            <div class="stat-label">Lesson Plans Generated</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">89</div>
+                            <div class="stat-label">Questions Asked</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">34</div>
+                            <div class="stat-label">Analyses Completed</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">2,847</div>
+                            <div class="stat-label">Minutes Used</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Profile Tab -->
-        <div id="profile" class="tab-content active">
+        <div id="profile" class="tab-content">
             <div class="content-grid">
                 <div class="card">
                     <h2>Personal Information</h2>
@@ -526,56 +578,6 @@ Master of Science in Financial Engineering (in progress)</textarea>
 
             <div style="text-align: right; margin-top: 32px;">
                 <button class="btn-primary" style="width: auto;">Save Changes</button>
-            </div>
-        </div>
-
-        <!-- Tools Tab -->
-        <div id="tools" class="tab-content">
-            <div class="tools-grid">
-                <div class="tool-card">
-                    <div class="tool-icon">📚</div>
-                    <h3>Lesson CoPilot</h3>
-                    <p>Generate comprehensive lesson plans with AI assistance. Customize for any subject and grade level.</p>
-                    <button class="btn-primary">Launch Tool</button>
-                </div>
-
-                <div class="tool-card">
-                    <div class="tool-icon">🤖</div>
-                    <h3>Knowledge Coach</h3>
-                    <p>Get instant answers to teaching questions and personalized suggestions for your classroom needs.</p>
-                    <button class="btn-primary">Launch Tool</button>
-                </div>
-
-                <div class="tool-card">
-                    <div class="tool-icon">📊</div>
-                    <h3>Teacher Needs Analysis</h3>
-                    <p>Analyze your curriculum and identify gaps. Get actionable insights to improve student outcomes.</p>
-                    <button class="btn-primary">Launch Tool</button>
-                </div>
-            </div>
-
-            <div class="content-grid full" style="margin-top: 32px;">
-                <div class="card">
-                    <h2>Tool Usage Statistics</h2>
-                    <div class="stats-grid">
-                        <div class="stat-box">
-                            <div class="stat-number">127</div>
-                            <div class="stat-label">Lesson Plans Generated</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-number">89</div>
-                            <div class="stat-label">Questions Asked</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-number">34</div>
-                            <div class="stat-label">Analyses Completed</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-number">2,847</div>
-                            <div class="stat-label">Minutes Used</div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
 
