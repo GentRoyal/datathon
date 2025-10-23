@@ -13,15 +13,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Verify EC2_HOST secret
-      run: |
-        if [ -z "${{ secrets.EC2_HOST }}" ]; then
-          echo "ERROR: EC2_HOST secret is empty!"
-          exit 1
-        else
-          echo "EC2_HOST is set"
-        fi
-
     - name: Write SSH key to file
       run: |
         mkdir -p ~/.ssh
@@ -30,11 +21,26 @@ jobs:
 
     - name: Copy project to EC2
       run: |
-        echo "Deploying to ${{ secrets.EC2_HOST }}"
         rsync -avz -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" --exclude '.git*' ./ ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/app/
 
-    - name: SSH and deploy Docker
+    - name: SSH, write .env, and deploy Docker
       run: |
         ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
           cd /home/ubuntu/app
+          # Create .env file from GitHub secrets
+          cat > .env << ENV_EOF
+          CHUNK_OVERLAP=${{ secrets.CHUNK_OVERLAP }}
+          CHUNK_SIZE=${{ secrets.CHUNK_SIZE }}
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}
+          GROQ_MODEL=${{ secrets.GROQ_MODEL }}
+          HUGGINGFACE_MODEL=${{ secrets.HUGGINGFACE_MODEL }}
+          MAX_FILE_SIZE=${{ secrets.MAX_FILE_SIZE }}
+          SUPPORTED_FORMATS=${{ secrets.SUPPORTED_FORMATS }}
+          ENV_EOF
+
+          # Deploy Docker
           docker compose down --remove-orphans
+          docker compose build
+          docker compose up -d
+        EOF
