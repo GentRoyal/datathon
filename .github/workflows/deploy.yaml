@@ -23,11 +23,11 @@ jobs:
       run: |
         rsync -avz -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" --exclude '.git*' ./ ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/app/
 
-    - name: SSH, write .env, and deploy Docker
+    - name: SSH, create .env, and deploy Docker
       run: |
         ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
           cd /home/ubuntu/app
-          # Create .env file from GitHub secrets
+          # Write secrets to .env file
           cat > .env << ENV_EOF
           CHUNK_OVERLAP=${{ secrets.CHUNK_OVERLAP }}
           CHUNK_SIZE=${{ secrets.CHUNK_SIZE }}

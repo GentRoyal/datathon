@@ -6,13 +6,6 @@ services:
     container_name: tnc_app
     ports:
       - "8000:8000"
-    environment:
-      CHUNK_OVERLAP: ${CHUNK_OVERLAP}
-      CHUNK_SIZE: ${CHUNK_SIZE}
-      DATABASE_URL: ${DATABASE_URL}
-      GROQ_API_KEY: ${GROQ_API_KEY}
-      GROQ_MODEL: ${GROQ_MODEL}
-      HUGGINGFACE_MODEL: ${HUGGINGFACE_MODEL}
-      MAX_FILE_SIZE: ${MAX_FILE_SIZE}
-      SUPPORTED_FORMATS: ${SUPPORTED_FORMATS}
+    env_file:
+      - .env
     command: uvicorn main:app --host 0.0.0.0 --port 8000
